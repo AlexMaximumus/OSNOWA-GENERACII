@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Copy, Loader2, Save, Wand, Users, RotateCw } from 'lucide-react';
@@ -12,7 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Character, Scene, SceneFormData, SceneFormSchema, PromptType } from '@/lib/types';
+import { Character, Scene, SceneFormData, SceneFormSchema } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { photoStyles } from '@/lib/photo-styles';
@@ -20,12 +20,15 @@ import { cameraAngles } from '@/lib/camera-angles';
 import { lightingStyles } from '@/lib/lighting-styles';
 import { cameras } from '@/lib/cameras';
 import { filmTypes } from '@/lib/film-types';
+import { useSearchParams } from 'next/navigation';
 
-export default function SceneCreationPage() {
+function SceneCreationForm() {
+  const searchParams = useSearchParams();
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [lastGeneratedData, setLastGeneratedData] = useState<SceneFormData | null>(null);
+  const [editingScene, setEditingScene] = useState<Scene | null>(null);
 
   const { toast } = useToast();
   const [scenes, setScenes] = useLocalStorage<Scene[]>('scenes', []);
@@ -45,6 +48,24 @@ export default function SceneCreationPage() {
     },
   });
 
+  useEffect(() => {
+    const sceneId = searchParams.get('id');
+    if (sceneId) {
+      const sceneToEdit = scenes.find(s => s.id === sceneId) ?? Object.fromEntries(searchParams.entries()) as unknown as Scene;
+      if (sceneToEdit) {
+        setEditingScene(sceneToEdit);
+        form.reset(sceneToEdit);
+        if (sceneToEdit.prompt) {
+          setGeneratedPrompt(sceneToEdit.prompt);
+        }
+        if (sceneToEdit.sceneDescription) {
+            setLastGeneratedData(sceneToEdit);
+        }
+      }
+    }
+  }, [searchParams, scenes, form]);
+
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       toast({
@@ -57,7 +78,6 @@ export default function SceneCreationPage() {
     if (!characterId || characterId === 'none') return undefined;
     const character = characters.find(c => c.id === characterId);
     if (!character) return undefined;
-    // The full context for the scene generation
     return `Appearance: ${character.appearanceDescription}\n\nPrompt Context: ${character.prompt}`;
   };
 
@@ -116,18 +136,30 @@ export default function SceneCreationPage() {
   function saveScene() {
     if (!generatedPrompt || !lastGeneratedData) return;
 
-    const newScene: Scene = {
-      id: crypto.randomUUID(),
-      ...lastGeneratedData,
-      prompt: generatedPrompt,
-      createdAt: new Date().toISOString(),
-    };
-
-    setScenes([newScene, ...scenes]);
-    toast({
-      title: 'Scene Saved',
-      description: `The scene has been added to your library.`,
-    });
+    if (editingScene) {
+        const updatedScene: Scene = {
+            ...editingScene,
+            ...lastGeneratedData,
+            prompt: generatedPrompt,
+        };
+        setScenes(scenes.map(s => s.id === editingScene.id ? updatedScene : s));
+        toast({
+            title: 'Scene Updated',
+            description: `The scene has been updated in your library.`,
+        });
+    } else {
+        const newScene: Scene = {
+            id: crypto.randomUUID(),
+            ...lastGeneratedData,
+            prompt: generatedPrompt,
+            createdAt: new Date().toISOString(),
+        };
+        setScenes([newScene, ...scenes]);
+        toast({
+            title: 'Scene Saved',
+            description: `The scene has been added to your library.`,
+        });
+    }
   }
   
   const currentPromptType = form.watch('promptType');
@@ -135,7 +167,7 @@ export default function SceneCreationPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-headline font-bold mb-6">Create New Scene</h1>
+      <h1 className="text-3xl font-headline font-bold mb-6">{editingScene ? 'Edit Scene' : 'Create New Scene'}</h1>
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <Card>
           <CardHeader>
@@ -171,7 +203,7 @@ export default function SceneCreationPage() {
                         <Users className="mr-2 h-4 w-4" />
                         Add Character to Scene
                       </FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a character..." />
@@ -201,7 +233,7 @@ export default function SceneCreationPage() {
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
-                          defaultValue={field.value}
+                          value={field.value}
                           className="flex space-x-4"
                         >
                           <FormItem className="flex items-center space-x-2 space-y-0">
@@ -233,7 +265,7 @@ export default function SceneCreationPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Art Style</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select an art style" />
@@ -258,7 +290,7 @@ export default function SceneCreationPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Camera Angle</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a camera angle" />
@@ -281,7 +313,7 @@ export default function SceneCreationPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Lighting Style</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a lighting style" />
@@ -304,7 +336,7 @@ export default function SceneCreationPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Camera</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a camera" />
@@ -327,7 +359,7 @@ export default function SceneCreationPage() {
                     render={({ field }) => (
                       <FormItem>
                         <FormLabel>Film Type</FormLabel>
-                        <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <Select onValueChange={field.onChange} value={field.value}>
                           <FormControl>
                             <SelectTrigger>
                               <SelectValue placeholder="Select a film type" />
@@ -397,11 +429,19 @@ export default function SceneCreationPage() {
           <CardFooter>
             <Button onClick={saveScene} disabled={!generatedPrompt || isLoading || isRegenerating} className="w-full">
               <Save className="mr-2 h-4 w-4" />
-              Save to Library
+              {editingScene ? 'Update Scene' : 'Save to Library'}
             </Button>
           </CardFooter>
         </Card>
       </div>
     </div>
   );
+}
+
+export default function SceneCreationPage() {
+    return (
+        <Suspense fallback={<div>Loading...</div>}>
+            <SceneCreationForm />
+        </Suspense>
+    )
 }
