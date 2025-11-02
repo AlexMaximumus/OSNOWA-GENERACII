@@ -21,15 +21,18 @@ const GenerateScenePromptInputSchema = z.object({
     .describe('Detailed description of the scene including environment, time of day, and mood.'),
   artStyle: z
     .string()
+    .optional()
     .describe('Preferred art style for the scene (e.g., photorealistic, painting, cartoon).'),
   cameraAngle: z
     .string()
+    .optional()
     .describe('Desired camera angle or perspective (e.g., wide shot, close-up, aerial view).'),
   lightingStyle: z
     .string()
+    .optional()
     .describe('Type of lighting for the scene (e.g., soft, dramatic, natural).'),
-  camera: z.string().describe('The camera used for the shot.'),
-  filmType: z.string().describe('The type of film used.'),
+  camera: z.string().optional().describe('The camera used for the shot.'),
+  filmType: z.string().optional().describe('The type of film used.'),
   promptType: PromptTypeSchema,
 });
 export type GenerateScenePromptInput = z.infer<typeof GenerateScenePromptInputSchema>;
@@ -49,6 +52,8 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateScenePromptOutputSchema},
   render: promptRender,
   prompt: `Вы — эксперт-инженер по промптам, специализирующийся на создании подробных и оптимизированных промптов для генерации изображений сцен на основе пользовательских вводов.
+
+Если пользователь предоставил конкретные параметры (стиль, камера и т.д.), используйте их. Если нет, выберите подходящие варианты сами, основываясь на общем описании.
   
   {{#ifCond promptType "==" "artistic"}}
   Вы должны сгенерировать художественный промпт. Промпт должен быть очень описательным и включать детали об окружении, персонажах (если есть), объектах, атмосфере и общей композиции, чтобы направить модель ИИ на создание желаемой сцены.
@@ -60,11 +65,11 @@ const prompt = ai.definePrompt({
   {{/ifCond}}
 
   Описание сцены: {{{sceneDescription}}}
-  Художественный стиль: {{{artStyle}}}
-  Ракурс камеры: {{{cameraAngle}}}
-  Стиль освещения: {{{lightingStyle}}}
-  Камера: {{{camera}}}
-  Тип пленки: {{{filmType}}}
+  {{#if artStyle}}Художественный стиль: {{{artStyle}}}{{/if}}
+  {{#if cameraAngle}}Ракурс камеры: {{{cameraAngle}}}{{/if}}
+  {{#if lightingStyle}}Стиль освещения: {{{lightingStyle}}}{{/if}}
+  {{#if camera}}Камера: {{{camera}}}{{/if}}
+  {{#if filmType}}Тип пленки: {{{filmType}}}{{/if}}
   `,
 });
 
