@@ -13,6 +13,7 @@ import {z} from 'genkit';
 import { PromptTypeSchema } from '@/lib/types';
 import { artisticPromptInstructions } from '@/lib/artistic-prompt-instructions';
 import { jsonPromptInstructions } from '@/lib/json-prompt-instructions';
+import { promptRender } from '@/ai/genkit';
 
 const GenerateCharacterPromptInputSchema = z.object({
   description: z.string().describe('A general description of the character.'),
@@ -45,6 +46,7 @@ const prompt = ai.definePrompt({
   name: 'generateCharacterPromptPrompt',
   input: {schema: GenerateCharacterPromptInputSchema},
   output: {schema: GenerateCharacterPromptOutputSchema},
+  render: promptRender,
   prompt: `Вы — инженер по промптам, специализирующийся на создании подробных промптов для дизайна персонажей.
 
 Проанализируйте следующее описание персонажа. Извлеките из него имя персонажа и сгенерируйте подробный промпт для создания изображения этого персонажа.

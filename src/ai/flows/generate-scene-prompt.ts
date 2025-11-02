@@ -4,7 +4,7 @@
  * @fileOverview Generates an optimized prompt for scene generation based on user inputs.
  *
  * - generateScenePrompt - A function that generates the scene prompt.
- * - GenerateScenePromptInput - The input type for the generateScenePrompt function.
+ * - GenerateScenePromptInput - The input type for the generateScenePrompt function🗂️
  * - GenerateScenePromptOutput - The return type for the generateScenePrompt function.
  */
 
@@ -13,6 +13,7 @@ import {z} from 'genkit';
 import { PromptTypeSchema } from '@/lib/types';
 import { artisticPromptInstructions } from '@/lib/artistic-prompt-instructions';
 import { jsonPromptInstructions } from '@/lib/json-prompt-instructions';
+import { promptRender } from '@/ai/genkit';
 
 const GenerateScenePromptInputSchema = z.object({
   sceneDescription: z
@@ -46,6 +47,7 @@ const prompt = ai.definePrompt({
   name: 'generateScenePrompt',
   input: {schema: GenerateScenePromptInputSchema},
   output: {schema: GenerateScenePromptOutputSchema},
+  render: promptRender,
   prompt: `Вы — эксперт-инженер по промптам, специализирующийся на создании подробных и оптимизированных промптов для генерации изображений сцен на основе пользовательских вводов.
   
   {{#ifCond promptType "==" "artistic"}}
