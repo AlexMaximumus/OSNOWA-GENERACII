@@ -32,6 +32,7 @@ export type Character = CharacterFormData & {
 export const SceneFormSchema = z.object({
   sceneDescription: z.string().min(1, "Scene description is required."),
   characterId: z.string().optional(),
+  outfitId: z.string().optional(),
   artStyle: z.string().optional().default(''),
   cameraAngle: z.string().optional().default(''),
   lightingStyle: z.string().optional().default(''),

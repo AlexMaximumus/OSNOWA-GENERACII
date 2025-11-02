@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Film, MountainSnow, Users, UserPlus, Shirt } from 'lucide-react';
+import { Film, MountainSnow, Users, UserPlus, Shirt, Library } from 'lucide-react';
 import {
   SidebarHeader,
   SidebarMenu,
@@ -15,12 +15,13 @@ import { Separator } from './ui/separator';
 
 const mainLinks = [
   { href: '/character-creation', label: 'Create Character', icon: UserPlus },
-  { href: '/scene-creation', label: 'Create Scene', icon: MountainSnow },
   { href: '/outfit-creation', label: 'Create Outfit', icon: Shirt },
+  { href: '/scene-creation', label: 'Create Scene', icon: MountainSnow },
 ];
 
 const libraryLinks = [
   { href: '/character-library', label: 'Character Library', icon: Users },
+  { href: '/outfit-library', label: 'Outfit Library', icon: Library },
   { href: '/scene-library', label: 'Scene Library', icon: Film },
 ];
 

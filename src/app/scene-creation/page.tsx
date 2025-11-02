@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Copy, Loader2, Save, Wand, Users, RotateCw } from 'lucide-react';
+import { Copy, Loader2, Save, Wand, Users, RotateCw, Shirt } from 'lucide-react';
 import { generateScenePrompt } from '@/ai/flows/generate-scene-prompt';
 import { regenerateScenePrompt } from '@/ai/flows/regenerate-scene-prompt';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Character, Scene, SceneFormData, SceneFormSchema } from '@/lib/types';
+import { Character, Scene, SceneFormData, SceneFormSchema, Outfit } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { photoStyles } from '@/lib/photo-styles';
@@ -33,12 +33,14 @@ function SceneCreationForm() {
   const { toast } = useToast();
   const [scenes, setScenes] = useLocalStorage<Scene[]>('scenes', []);
   const [characters] = useLocalStorage<Character[]>('characters', []);
-
+  const [outfits] = useLocalStorage<Outfit[]>('outfits', []);
+  
   const form = useForm<SceneFormData>({
     resolver: zodResolver(SceneFormSchema),
     defaultValues: {
       sceneDescription: '',
       characterId: 'none',
+      outfitId: 'none',
       artStyle: 'none',
       cameraAngle: 'none',
       lightingStyle: 'none',
@@ -47,6 +49,9 @@ function SceneCreationForm() {
       promptType: 'artistic',
     },
   });
+  
+  const selectedCharacterId = form.watch('characterId');
+  const availableOutfits = outfits.filter(o => o.characterId === selectedCharacterId);
 
   useEffect(() => {
     const sceneId = searchParams.get('id');
@@ -54,7 +59,11 @@ function SceneCreationForm() {
       const sceneToEdit = scenes.find(s => s.id === sceneId) ?? Object.fromEntries(searchParams.entries()) as unknown as Scene;
       if (sceneToEdit) {
         setEditingScene(sceneToEdit);
-        form.reset(sceneToEdit);
+        form.reset({
+          ...sceneToEdit,
+          characterId: sceneToEdit.characterId || 'none',
+          outfitId: sceneToEdit.outfitId || 'none',
+        });
         if (sceneToEdit.prompt) {
           setGeneratedPrompt(sceneToEdit.prompt);
         }
@@ -74,10 +83,19 @@ function SceneCreationForm() {
     });
   };
 
-  const getCharacterInfo = (characterId?: string): string | undefined => {
-    if (!characterId || characterId === 'none') return undefined;
-    const character = characters.find(c => c.id === characterId);
+  const getCharacterInfo = (data: SceneFormData): string | undefined => {
+    if (!data.characterId || data.characterId === 'none') return undefined;
+    const character = characters.find(c => c.id === data.characterId);
     if (!character) return undefined;
+    
+    const outfit = outfits.find(o => o.id === data.outfitId);
+
+    // If an outfit is selected, its prompt is self-contained (includes character appearance).
+    if (outfit) {
+        return outfit.prompt;
+    }
+
+    // Otherwise, use the character's base prompt.
     return `Appearance: ${character.appearanceDescription}\n\nPrompt Context: ${character.prompt}`;
   };
 
@@ -93,7 +111,7 @@ function SceneCreationForm() {
     }
 
     try {
-      const characterInfo = getCharacterInfo(data.characterId);
+      const characterInfo = getCharacterInfo(data);
       
       let result;
       if (isRegen) {
@@ -135,11 +153,15 @@ function SceneCreationForm() {
 
   function saveScene() {
     if (!generatedPrompt || !lastGeneratedData) return;
+    
+    // Get current form state to save selections
+    const currentFormData = form.getValues();
 
     if (editingScene) {
         const updatedScene: Scene = {
             ...editingScene,
-            ...lastGeneratedData,
+            ...lastGeneratedData, // Original description
+            ...currentFormData, // Selections like characterId, outfitId etc.
             prompt: generatedPrompt,
         };
         setScenes(scenes.map(s => s.id === editingScene.id ? updatedScene : s));
@@ -151,6 +173,7 @@ function SceneCreationForm() {
         const newScene: Scene = {
             id: crypto.randomUUID(),
             ...lastGeneratedData,
+            ...currentFormData,
             prompt: generatedPrompt,
             createdAt: new Date().toISOString(),
         };
@@ -203,7 +226,10 @@ function SceneCreationForm() {
                         <Users className="mr-2 h-4 w-4" />
                         Add Character to Scene
                       </FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select onValueChange={(value) => {
+                          field.onChange(value);
+                          form.setValue('outfitId', 'none');
+                      }} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a character..." />
@@ -223,6 +249,38 @@ function SceneCreationForm() {
                     </FormItem>
                   )}
                 />
+
+                {selectedCharacterId && selectedCharacterId !== 'none' && (
+                    <FormField
+                    control={form.control}
+                    name="outfitId"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel className="flex items-center">
+                            <Shirt className="mr-2 h-4 w-4" />
+                            Select Outfit
+                        </FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                            <SelectTrigger disabled={availableOutfits.length === 0}>
+                                <SelectValue placeholder={availableOutfits.length > 0 ? "Select an outfit..." : "No outfits for this character"} />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            <SelectItem value="none">Default Outfit</SelectItem>
+                            {availableOutfits.map((outfit) => (
+                                <SelectItem key={outfit.id} value={outfit.id}>{outfit.name}</SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
+                        <FormDescription>
+                            Choose a saved outfit for the selected character.
+                        </FormDescription>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
+                )}
 
                 <FormField
                   control={form.control}
@@ -380,7 +438,7 @@ function SceneCreationForm() {
 
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand className="mr-2 h-4 w-4" />}
-                  Generate Prompt
+                  {editingScene ? 'Update Prompt' : 'Generate Prompt'}
                 </Button>
 
                 {generatedPrompt && (
