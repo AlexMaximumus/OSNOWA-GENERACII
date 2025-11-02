@@ -20,9 +20,14 @@ import { lightingStyles } from '@/lib/lighting-styles';
 import { cameras } from '@/lib/cameras';
 import { filmTypes } from '@/lib/film-types';
 
+type GeneratedData = {
+  prompt: string;
+  name: string;
+  appearanceDescription: string;
+};
+
 export default function CharacterCreationPage() {
-  const [generatedPrompt, setGeneratedPrompt] = useState('');
-  const [characterName, setCharacterName] = useState('');
+  const [generatedData, setGeneratedData] = useState<GeneratedData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastGeneratedCharacter, setLastGeneratedCharacter] = useState<CharacterFormData | null>(null);
 
@@ -44,21 +49,23 @@ export default function CharacterCreationPage() {
 
   async function onSubmit(data: CharacterFormData) {
     setIsLoading(true);
-    setGeneratedPrompt('');
-    setCharacterName('');
+    setGeneratedData(null);
     setLastGeneratedCharacter(null);
     try {
       const result = await generateCharacterPrompt(data);
-      if (result.prompt && result.name) {
-        setGeneratedPrompt(result.prompt);
-        setCharacterName(result.name);
+      if (result.prompt && result.name && result.appearanceDescription) {
+        setGeneratedData({
+            prompt: result.prompt,
+            name: result.name,
+            appearanceDescription: result.appearanceDescription
+        });
         setLastGeneratedCharacter(data);
         toast({
           title: 'Prompt Generated',
           description: `Your prompt for "${result.name}" has been successfully created.`,
         });
       } else {
-        throw new Error('Prompt was not generated.');
+        throw new Error('Prompt was not generated correctly.');
       }
     } catch (error) {
       console.error('Error generating character prompt:', error);
@@ -73,20 +80,21 @@ export default function CharacterCreationPage() {
   }
 
   function saveCharacter() {
-    if (!generatedPrompt || !lastGeneratedCharacter || !characterName) return;
+    if (!generatedData || !lastGeneratedCharacter) return;
 
     const newCharacter: Character = {
       id: crypto.randomUUID(),
       ...lastGeneratedCharacter,
-      name: characterName,
-      prompt: generatedPrompt,
+      name: generatedData.name,
+      prompt: generatedData.prompt,
+      appearanceDescription: generatedData.appearanceDescription,
       createdAt: new Date().toISOString(),
     };
 
     setCharacters([newCharacter, ...characters]);
     toast({
       title: 'Character Saved',
-      description: `${characterName} has been added to your library.`,
+      description: `${generatedData.name} has been added to your library.`,
     });
   }
 
@@ -282,8 +290,8 @@ export default function CharacterCreationPage() {
               <div className="flex items-center justify-center h-full">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : generatedPrompt ? (
-              <Textarea readOnly value={generatedPrompt} className="h-full min-h-[300px] text-base" />
+            ) : generatedData ? (
+              <Textarea readOnly value={generatedData.prompt} className="h-full min-h-[300px] text-base" />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
                 Your prompt is waiting to be created...
@@ -291,7 +299,7 @@ export default function CharacterCreationPage() {
             )}
           </CardContent>
           <CardFooter>
-            <Button onClick={saveCharacter} disabled={!generatedPrompt || isLoading} className="w-full">
+            <Button onClick={saveCharacter} disabled={!generatedData || isLoading} className="w-full">
               <Save className="mr-2 h-4 w-4" />
               Save to Library
             </Button>

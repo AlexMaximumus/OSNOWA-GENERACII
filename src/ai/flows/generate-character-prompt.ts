@@ -36,6 +36,7 @@ export type GenerateCharacterPromptInput = z.infer<typeof GenerateCharacterPromp
 
 const GenerateCharacterPromptOutputSchema = z.object({
   name: z.string().describe('The name of the character, extracted from the description.'),
+  appearanceDescription: z.string().describe('A detailed physical description of the character from head to toe.'),
   prompt: z.string().describe('The generated prompt for character creation.'),
 });
 export type GenerateCharacterPromptOutput = z.infer<typeof GenerateCharacterPromptOutputSchema>;
@@ -54,7 +55,10 @@ const generateCharacterPromptFlow = ai.defineFlow(
     
     let basePrompt = `You are a prompt engineer specializing in creating detailed character design prompts.
 
-Analyze the following character description. Extract the character's name and generate a detailed prompt for creating an image of this character.
+Analyze the following character description. Extract the character's name and generate:
+1. A detailed prompt for creating an image of this character.
+2. A separate, detailed physical description of the character from head to toe.
+
 If a name is not explicitly provided, invent one.
 
 If the user has provided specific parameters (style, camera, etc.), use them. If not, choose suitable options yourself based on the general description.

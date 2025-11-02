@@ -10,6 +10,7 @@ import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 function CharacterCard({ character, onDelete }: { character: Character, onDelete: (id: string) => void }) {
   return (
@@ -17,13 +18,26 @@ function CharacterCard({ character, onDelete }: { character: Character, onDelete
       <CardHeader>
         <CardTitle className="font-headline">{character.name}</CardTitle>
         <CardDescription className="line-clamp-2">
-            {character.artStyle}
+            {character.description}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p className="text-sm text-muted-foreground line-clamp-4">{character.prompt}</p>
+        <Accordion type="single" collapsible className="w-full">
+          <AccordionItem value="appearance">
+            <AccordionTrigger>Appearance</AccordionTrigger>
+            <AccordionContent>
+              <p className="text-sm text-muted-foreground">{character.appearanceDescription}</p>
+            </AccordionContent>
+          </AccordionItem>
+          <AccordionItem value="prompt">
+            <AccordionTrigger>Generated Prompt</AccordionTrigger>
+            <AccordionContent>
+               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{character.prompt}</p>
+            </AccordionContent>
+          </AccordionItem>
+        </Accordion>
       </CardContent>
-      <CardFooter className="flex justify-between items-center">
+      <CardFooter className="flex justify-between items-center mt-4">
         <p className="text-xs text-muted-foreground">
           Created {formatDistanceToNow(new Date(character.createdAt), { addSuffix: true })}
         </p>
