@@ -7,3 +7,4 @@ import '@/ai/flows/improve-scene-prompt.ts';
 import '@/ai/flows/generate-character-prompt.ts';
 import '@/ai/flows/regenerate-scene-prompt.ts';
 import '@/ai/flows/generate-outfit-prompt.ts';
+import '@/ai/flows/generate-location-prompt.ts';

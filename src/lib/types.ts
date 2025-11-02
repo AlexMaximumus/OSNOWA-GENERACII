@@ -63,4 +63,23 @@ export type Outfit = {
     prompt: string; // The detailed AI-generated description
     createdAt: string;
 };
-    
+
+// For Location Generation
+export const LocationFormSchema = z.object({
+  description: z.string().min(1, "Description is required."),
+  artStyle: z.string().optional().default(''),
+  cameraAngle: z.string().optional().default(''),
+  lightingStyle: z.string().optional().default(''),
+  camera: z.string().optional().default(''),
+  filmType: z.string().optional().default(''),
+  promptType: PromptTypeSchema.default("artistic"),
+});
+export type LocationFormData = z.infer<typeof LocationFormSchema>;
+
+// For storage
+export type Location = LocationFormData & {
+  id: string;
+  name: string; // Extracted by AI
+  prompt: string;
+  createdAt: string; // Use ISO string for serialization
+};
