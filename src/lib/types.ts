@@ -6,11 +6,11 @@ export type PromptType = z.infer<typeof PromptTypeSchema>;
 // For form validation
 export const CharacterFormSchema = z.object({
   description: z.string().min(1, "Описание обязательно."),
-  artStyle: z.string(),
-  cameraAngle: z.string(),
-  lightingStyle: z.string(),
-  camera: z.string(),
-  filmType: z.string(),
+  artStyle: z.string().optional(),
+  cameraAngle: z.string().optional(),
+  lightingStyle: z.string().optional(),
+  camera: z.string().optional(),
+  filmType: z.string().optional(),
   promptType: PromptTypeSchema.default("artistic"),
 });
 export type CharacterFormData = z.infer<typeof CharacterFormSchema>;
@@ -26,11 +26,11 @@ export type Character = CharacterFormData & {
 // For form validation
 export const SceneFormSchema = z.object({
   sceneDescription: z.string().min(1, "Описание сцены обязательно."),
-  artStyle: z.string(),
-  cameraAngle: z.string(),
-  lightingStyle: z.string(),
-  camera: z.string(),
-  filmType: z.string(),
+  artStyle: z.string().optional(),
+  cameraAngle: z.string().optional(),
+  lightingStyle: z.string().optional(),
+  camera: z.string().optional(),
+  filmType: z.string().optional(),
   promptType: PromptTypeSchema.default("artistic"),
 });
 export type SceneFormData = z.infer<typeof SceneFormSchema>;

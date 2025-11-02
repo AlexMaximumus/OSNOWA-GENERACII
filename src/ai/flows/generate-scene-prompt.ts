@@ -13,7 +13,6 @@ import {z} from 'genkit';
 import { PromptTypeSchema } from '@/lib/types';
 import { artisticPromptInstructions } from '@/lib/artistic-prompt-instructions';
 import { jsonPromptInstructions } from '@/lib/json-prompt-instructions';
-import { promptRender } from '@/ai/genkit';
 
 const GenerateScenePromptInputSchema = z.object({
   sceneDescription: z
@@ -46,40 +45,40 @@ export async function generateScenePrompt(input: GenerateScenePromptInput): Prom
   return generateScenePromptFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'generateScenePrompt',
-  input: {schema: GenerateScenePromptInputSchema},
-  output: {schema: GenerateScenePromptOutputSchema},
-  render: promptRender,
-  prompt: `Вы — эксперт-инженер по промптам, специализирующийся на создании подробных и оптимизированных промптов для генерации изображений сцен на основе пользовательских вводов.
-
-Если пользователь предоставил конкретные параметры (стиль, камера и т.д.), используйте их. Если нет, выберите подходящие варианты сами, основываясь на общем описании.
-  
-  {{#ifCond promptType "==" "artistic"}}
-  Вы должны сгенерировать художественный промпт. Промпт должен быть очень описательным и включать детали об окружении, персонажах (если есть), объектах, атмосфере и общей композиции, чтобы направить модель ИИ на создание желаемой сцены.
-  ${artisticPromptInstructions}
-  {{/ifCond}}
-  {{#ifCond promptType "==" "json"}}
-  Вы должны сгенерировать JSON промпт. Заполните JSON структуру на основе описания.
-  ${jsonPromptInstructions}
-  {{/ifCond}}
-
-  Описание сцены: {{{sceneDescription}}}
-  {{#if artStyle}}Художественный стиль: {{{artStyle}}}{{/if}}
-  {{#if cameraAngle}}Ракурс камеры: {{{cameraAngle}}}{{/if}}
-  {{#if lightingStyle}}Стиль освещения: {{{lightingStyle}}}{{/if}}
-  {{#if camera}}Камера: {{{camera}}}{{/if}}
-  {{#if filmType}}Тип пленки: {{{filmType}}}{{/if}}
-  `,
-});
-
 const generateScenePromptFlow = ai.defineFlow(
   {
     name: 'generateScenePromptFlow',
     inputSchema: GenerateScenePromptInputSchema,
     outputSchema: GenerateScenePromptOutputSchema,
   },
-  async input => {
+  async (input) => {
+    const promptText = `Вы — эксперт-инженер по промптам, специализирующийся на создании подробных и оптимизированных промптов для генерации изображений сцен на основе пользовательских вводов.
+
+Если пользователь предоставил конкретные параметры (стиль, камера и т.д.), используйте их. Если нет, выберите подходящие варианты сами, основываясь на общем описании.
+  
+  ${
+    input.promptType === 'artistic'
+      ? `Вы должны сгенерировать художественный промпт. Промпт должен быть очень описательным и включать детали об окружении, персонажах (если есть), объектах, атмосфере и общей композиции, чтобы направить модель ИИ на создание желаемой сцены.
+  ${artisticPromptInstructions}`
+      : `Вы должны сгенерировать JSON промпт. Заполните JSON структуру на основе описания.
+  ${jsonPromptInstructions}`
+  }
+
+  Описание сцены: ${input.sceneDescription}
+  ${input.artStyle ? `Художественный стиль: ${input.artStyle}` : ''}
+  ${input.cameraAngle ? `Ракурс камеры: ${input.cameraAngle}` : ''}
+  ${input.lightingStyle ? `Стиль освещения: ${input.lightingStyle}` : ''}
+  ${input.camera ? `Камера: ${input.camera}` : ''}
+  ${input.filmType ? `Тип пленки: ${input.filmType}` : ''}
+  `;
+
+    const prompt = ai.definePrompt({
+        name: 'generateScenePrompt',
+        input: {schema: GenerateScenePromptInputSchema},
+        output: {schema: GenerateScenePromptOutputSchema},
+        prompt: promptText,
+    });
+    
     const {output} = await prompt(input);
     return output!;
   }

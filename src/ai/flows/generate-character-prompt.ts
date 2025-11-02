@@ -13,7 +13,6 @@ import {z} from 'genkit';
 import { PromptTypeSchema } from '@/lib/types';
 import { artisticPromptInstructions } from '@/lib/artistic-prompt-instructions';
 import { jsonPromptInstructions } from '@/lib/json-prompt-instructions';
-import { promptRender } from '@/ai/genkit';
 
 const GenerateCharacterPromptInputSchema = z.object({
   description: z.string().describe('A general description of the character.'),
@@ -45,43 +44,43 @@ export async function generateCharacterPrompt(input: GenerateCharacterPromptInpu
   return generateCharacterPromptFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'generateCharacterPromptPrompt',
-  input: {schema: GenerateCharacterPromptInputSchema},
-  output: {schema: GenerateCharacterPromptOutputSchema},
-  render: promptRender,
-  prompt: `Вы — инженер по промптам, специализирующийся на создании подробных промптов для дизайна персонажей.
-
-Проанализируйте следующее описание персонажа. Извлеките из него имя персонажа и сгенерируйте подробный промпт для создания изображения этого персонажа.
-Если имя не указано явно, придумайте его.
-
-Если пользователь предоставил конкретные параметры (стиль, камера и т.д.), используйте их. Если нет, выберите подходящие варианты сами, основываясь на общем описании.
-
-{{#ifCond promptType "==" "artistic"}}
-Вы должны сгенерировать художественный промпт. Промпт должен включать детали о внешности, одежде и окружении персонажа, соответствующие его образу.
-${artisticPromptInstructions}
-{{/ifCond}}
-{{#ifCond promptType "==" "json"}}
-Вы должны сгенерировать JSON промпт. Заполните JSON структуру на основе описания.
-${jsonPromptInstructions}
-{{/ifCond}}
-  
-Описание персонажа: {{{description}}}
-{{#if artStyle}}Художественный стиль: {{{artStyle}}}{{/if}}
-{{#if cameraAngle}}Ракурс камеры: {{{cameraAngle}}}{{/if}}
-{{#if lightingStyle}}Стиль освещения: {{{lightingStyle}}}{{/if}}
-{{#if camera}}Камера: {{{camera}}}{{/if}}
-{{#if filmType}}Тип пленки: {{{filmType}}}{{/if}}
-`,
-});
-
 const generateCharacterPromptFlow = ai.defineFlow(
   {
     name: 'generateCharacterPromptFlow',
     inputSchema: GenerateCharacterPromptInputSchema,
     outputSchema: GenerateCharacterPromptOutputSchema,
   },
-  async input => {
+  async (input) => {
+    
+    const promptText = `Вы — инженер по промптам, специализирующийся на создании подробных промптов для дизайна персонажей.
+
+Проанализируйте следующее описание персонажа. Извлеките из него имя персонажа и сгенерируйте подробный промпт для создания изображения этого персонажа.
+Если имя не указано явно, придумайте его.
+
+Если пользователь предоставил конкретные параметры (стиль, камера и т.д.), используйте их. Если нет, выберите подходящие варианты сами, основываясь на общем описании.
+
+${
+  input.promptType === 'artistic'
+    ? `Вы должны сгенерировать художественный промпт. Промпт должен включать детали о внешности, одежде и окружении персонажа, соответствующие его образу.
+${artisticPromptInstructions}`
+    : `Вы должны сгенерировать JSON промпт. Заполните JSON структуру на основе описания.
+${jsonPromptInstructions}`
+}
+  
+Описание персонажа: ${input.description}
+${input.artStyle ? `Художественный стиль: ${input.artStyle}` : ''}
+${input.cameraAngle ? `Ракурс камеры: ${input.cameraAngle}` : ''}
+${input.lightingStyle ? `Стиль освещения: ${input.lightingStyle}` : ''}
+${input.camera ? `Камера: ${input.camera}` : ''}
+${input.filmType ? `Тип пленки: ${input.filmType}` : ''}
+`;
+
+    const prompt = ai.definePrompt({
+        name: 'generateCharacterPromptPrompt',
+        input: {schema: GenerateCharacterPromptInputSchema},
+        output: {schema: GenerateCharacterPromptOutputSchema},
+        prompt: promptText
+    });
     const {output} = await prompt(input);
     return output!;
   }
