@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Copy, Loader2, Save } from 'lucide-react';
+import { Copy, Loader2, Save, User } from 'lucide-react';
 import { generateScenePrompt } from '@/ai/flows/generate-scene-prompt';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Scene, SceneFormData, SceneFormSchema } from '@/lib/types';
+import { Character, Scene, SceneFormData, SceneFormSchema } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { photoStyles } from '@/lib/photo-styles';
@@ -27,6 +27,7 @@ export default function SceneCreationPage() {
 
   const { toast } = useToast();
   const [scenes, setScenes] = useLocalStorage<Scene[]>('scenes', []);
+  const [characters] = useLocalStorage<Character[]>('characters', []);
 
   const form = useForm<SceneFormData>({
     resolver: zodResolver(SceneFormSchema),
@@ -40,6 +41,19 @@ export default function SceneCreationPage() {
       promptType: 'artistic',
     },
   });
+
+  const handleCharacterSelect = (characterId: string) => {
+    const selectedCharacter = characters.find(c => c.id === characterId);
+    if (selectedCharacter) {
+      const currentDescription = form.getValues('sceneDescription');
+      const characterDetails = `
+
+[Character: ${selectedCharacter.name}]
+${selectedCharacter.appearanceDescription}
+`;
+      form.setValue('sceneDescription', (currentDescription ? currentDescription + '\n\n' : '') + characterDetails.trim());
+    }
+  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -106,6 +120,26 @@ export default function SceneCreationPage() {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                 <FormItem>
+                  <FormLabel>Add Saved Character</FormLabel>
+                  <Select onValueChange={handleCharacterSelect} disabled={characters.length === 0}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <User className="mr-2 h-4 w-4 text-muted-foreground" />
+                        <SelectValue placeholder="Select a character to add to the scene" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      {characters.length > 0 ? (
+                        characters.map((char) => (
+                          <SelectItem key={char.id} value={char.id}>{char.name}</SelectItem>
+                        ))
+                      ) : (
+                        <SelectItem value="no-character" disabled>No characters in library</SelectItem>
+                      )}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
                  <FormField
                   control={form.control}
                   name="promptType"
