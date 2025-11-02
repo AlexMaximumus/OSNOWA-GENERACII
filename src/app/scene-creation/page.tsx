@@ -348,3 +348,5 @@ ${selectedCharacter.appearanceDescription}
     </div>
   );
 }
+
+    
