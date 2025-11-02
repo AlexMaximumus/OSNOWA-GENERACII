@@ -23,6 +23,7 @@ import { cameras } from '@/lib/cameras';
 import { filmTypes } from '@/lib/film-types';
 import { useSearchParams } from 'next/navigation';
 import { useFavoriteSettings } from '@/hooks/use-favorite-settings';
+import { useCompletionVFX } from '@/hooks/use-completion-vfx';
 
 function SceneCreationForm() {
   const searchParams = useSearchParams();
@@ -38,6 +39,7 @@ function SceneCreationForm() {
   const [outfits, setOutfits] = useLocalStorage<Outfit[]>('outfits', []);
   const [locations] = useLocalStorage<Location[]>('locations', []);
   const { favoriteSettings, saveFavoriteSettings, resetFavoriteSettings } = useFavoriteSettings();
+  const { triggerVFX, VFXLayer } = useCompletionVFX();
   
   const form = useForm<SceneFormData>({
     resolver: zodResolver(SceneFormSchema),
@@ -161,6 +163,7 @@ function SceneCreationForm() {
           title: `Prompt ${isRegen ? 'Regenerated' : 'Generated'}`,
           description: `Your scene prompt has been successfully ${isRegen ? 'updated' : 'created'}.`,
         });
+        triggerVFX();
       } else {
         throw new Error('Prompt was not generated correctly.');
       }
@@ -246,371 +249,374 @@ function SceneCreationForm() {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-headline font-bold mb-6">{editingScene ? 'Edit Scene' : 'Create New Scene'}</h1>
-      <div className="grid md:grid-cols-2 gap-8 items-start">
-        <Card>
-          <CardHeader>
-            <CardTitle>Scene Details</CardTitle>
-            <CardDescription>Describe your scene and select generation parameters.</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <Form {...form}>
-              <form onSubmit={form.handleSubmit((data) => handleGeneration(data, false))} className="space-y-4">
-                
-                <FormItem>
-                  <FormLabel className="flex items-center"><Library className="mr-2 h-4 w-4" />Load from Library</FormLabel>
-                  <Select onValueChange={handleSceneSelect} value={editingScene?.id || 'none'}>
-                    <FormControl>
-                      <SelectTrigger disabled={scenes.length === 0}>
-                        <SelectValue placeholder={scenes.length > 0 ? "Select a scene to edit..." : "No scenes in library"} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">Create a new scene</SelectItem>
-                      {scenes.map((scene) => (
-                        <SelectItem key={scene.id} value={scene.id}>{scene.artStyle}: {scene.sceneDescription.substring(0, 50)}...</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </FormItem>
-
-                 <FormField
-                  control={form.control}
-                  name="locationId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center">
-                        <Library className="mr-2 h-4 w-4" />
-                        Use Location from Library
-                      </FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger disabled={locations.length === 0}>
-                            <SelectValue placeholder={locations.length > 0 ? "Select a location..." : "No locations in library"} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">Describe location manually</SelectItem>
-                          {locations.map((loc) => (
-                            <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        Select a saved location to use its prompt as the base for the scene.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-
-                <FormField
-                  control={form.control}
-                  name="sceneDescription"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Scene Description</FormLabel>
+    <>
+      {VFXLayer}
+      <div className="container mx-auto p-4 md:p-8">
+        <h1 className="text-3xl font-headline font-bold mb-6">{editingScene ? 'Edit Scene' : 'Create New Scene'}</h1>
+        <div className="grid md:grid-cols-2 gap-8 items-start">
+          <Card>
+            <CardHeader>
+              <CardTitle>Scene Details</CardTitle>
+              <CardDescription>Describe your scene and select generation parameters.</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit((data) => handleGeneration(data, false))} className="space-y-4">
+                  
+                  <FormItem>
+                    <FormLabel className="flex items-center"><Library className="mr-2 h-4 w-4" />Load from Library</FormLabel>
+                    <Select onValueChange={handleSceneSelect} value={editingScene?.id || 'none'}>
                       <FormControl>
-                        <Textarea 
-                          rows={8}
-                          placeholder={
-                            selectedLocationId && selectedLocationId !== 'none'
-                              ? "Add specific details for this scene (e.g., character actions, time of day, specific mood). The base location details will be included automatically."
-                              : "e.g., A quiet, rain-slicked alley in Shinjuku at midnight, illuminated by a single flickering neon sign. A sense of loneliness and mystery."
-                          } 
-                          {...field}
-                        />
+                        <SelectTrigger disabled={scenes.length === 0}>
+                          <SelectValue placeholder={scenes.length > 0 ? "Select a scene to edit..." : "No scenes in library"} />
+                        </SelectTrigger>
                       </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="characterId"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel className="flex items-center">
-                        <Users className="mr-2 h-4 w-4" />
-                        Add Character to Scene
-                      </FormLabel>
-                      <Select onValueChange={(value) => {
-                          field.onChange(value);
-                          form.setValue('outfitId', 'none');
-                      }} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger disabled={characters.length === 0}>
-                            <SelectValue placeholder={characters.length > 0 ? "Select a character..." : "No characters in library"} />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">No Character</SelectItem>
-                          {characters.map((char) => (
-                            <SelectItem key={char.id} value={char.id}>{char.name}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormDescription>
-                        Select a saved character to include them in the scene.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                      <SelectContent>
+                        <SelectItem value="none">Create a new scene</SelectItem>
+                        {scenes.map((scene) => (
+                          <SelectItem key={scene.id} value={scene.id}>{scene.artStyle}: {scene.sceneDescription.substring(0, 50)}...</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </FormItem>
 
-                {form.watch('characterId') && form.watch('characterId') !== 'none' && (
-                    <FormField
+                  <FormField
                     control={form.control}
-                    name="outfitId"
+                    name="locationId"
                     render={({ field }) => (
-                        <FormItem>
+                      <FormItem>
                         <FormLabel className="flex items-center">
-                            <Shirt className="mr-2 h-4 w-4" />
-                            Select Outfit
+                          <Library className="mr-2 h-4 w-4" />
+                          Use Location from Library
                         </FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                            <SelectTrigger disabled={availableOutfits.length === 0}>
-                                <SelectValue placeholder={availableOutfits.length > 0 ? "Select an outfit..." : "No outfits in library"} />
+                          <FormControl>
+                            <SelectTrigger disabled={locations.length === 0}>
+                              <SelectValue placeholder={locations.length > 0 ? "Select a location..." : "No locations in library"} />
                             </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                            <SelectItem value="none">Default Outfit</SelectItem>
-                            {availableOutfits.map((outfit) => (
-                                <SelectItem key={outfit.id} value={outfit.id}>{outfit.name}</SelectItem>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="none">Describe location manually</SelectItem>
+                            {locations.map((loc) => (
+                              <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
                             ))}
-                            </SelectContent>
+                          </SelectContent>
                         </Select>
                         <FormDescription>
-                            Choose a saved outfit for the selected character.
+                          Select a saved location to use its prompt as the base for the scene.
                         </FormDescription>
                         <FormMessage />
-                        </FormItem>
+                      </FormItem>
                     )}
-                    />
-                )}
+                  />
 
-                <FormField
-                  control={form.control}
-                  name="promptType"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel>Prompt Type</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          value={field.value}
-                          className="flex space-x-4"
-                        >
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="artistic" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Artistic
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="json" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              JSON
-                            </FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                
-                <div className="space-y-2 p-4 border rounded-lg">
-                    <h3 className="text-lg font-semibold">Generation Settings</h3>
-                    <div className="flex items-center gap-2">
-                        <Button type="button" size="sm" onClick={handleSaveFavorites}><Star className="mr-2 h-4 w-4" /> Save as Favorite</Button>
-                        <Button type="button" size="sm" variant="outline" onClick={resetFavoriteSettings}><Trash2 className="mr-2 h-4 w-4" /> Reset</Button>
-                    </div>
-
-                    <FormField
+                  <FormField
                     control={form.control}
-                    name="artStyle"
+                    name="sceneDescription"
                     render={({ field }) => (
-                        <FormItem>
-                        <FormLabel>Art Style</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                            <SelectTrigger>
-                                <SelectValue placeholder="Select an art style" />
-                            </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            {photoStyles.map((style) => (
-                                <SelectItem key={style} value={style}>{style}</SelectItem>
-                            ))}
-                            </SelectContent>
-                        </Select>
+                      <FormItem>
+                        <FormLabel>Scene Description</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            rows={8}
+                            placeholder={
+                              selectedLocationId && selectedLocationId !== 'none'
+                                ? "Add specific details for this scene (e.g., character actions, time of day, specific mood). The base location details will be included automatically."
+                                : "e.g., A quiet, rain-slicked alley in Shinjuku at midnight, illuminated by a single flickering neon sign. A sense of loneliness and mystery."
+                            } 
+                            {...field}
+                          />
+                        </FormControl>
                         <FormMessage />
-                        </FormItem>
+                      </FormItem>
                     )}
-                    />
+                  />
+                  <FormField
+                    control={form.control}
+                    name="characterId"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="flex items-center">
+                          <Users className="mr-2 h-4 w-4" />
+                          Add Character to Scene
+                        </FormLabel>
+                        <Select onValueChange={(value) => {
+                            field.onChange(value);
+                            form.setValue('outfitId', 'none');
+                        }} value={field.value}>
+                          <FormControl>
+                            <SelectTrigger disabled={characters.length === 0}>
+                              <SelectValue placeholder={characters.length > 0 ? "Select a character..." : "No characters in library"} />
+                            </SelectTrigger>
+                          </FormControl>
+                          <SelectContent>
+                            <SelectItem value="none">No Character</SelectItem>
+                            {characters.map((char) => (
+                              <SelectItem key={char.id} value={char.id}>{char.name}</SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                        <FormDescription>
+                          Select a saved character to include them in the scene.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
 
-                    {isArtisticPrompt && (<>
-                    <FormField
-                        control={form.control}
-                        name="cameraAngle"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Camera Angle</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder="Select a camera angle" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                {cameraAngles.map((angle) => (
-                                <SelectItem key={angle} value={angle}>{angle}</SelectItem>
-                                ))}
-                            </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="lightingStyle"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Lighting Style</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder="Select a lighting style" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                {lightingStyles.map((style) => (
-                                <SelectItem key={style} value={style}>{style}</SelectItem>
-                                ))}
-                            </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="camera"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Camera</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder="Select a camera" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                {cameras.map((camera) => (
-                                <SelectItem key={camera} value={camera}>{camera}</SelectItem>
-                                ))}
-                            </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="filmType"
-                        render={({ field }) => (
-                        <FormItem>
-                            <FormLabel>Film Type</FormLabel>
-                            <Select onValueChange={field.onChange} value={field.value}>
-                            <FormControl>
-                                <SelectTrigger>
-                                <SelectValue placeholder="Select a film type" />
-                                </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                                <SelectItem value="none">None</SelectItem>
-                                {filmTypes.map((film) => (
-                                <SelectItem key={film} value={film}>{film}</SelectItem>
-                                ))}
-                            </SelectContent>
-                            </Select>
-                            <FormMessage />
-                        </FormItem>
-                        )}
-                    />
-                    </>)}
-                </div>
+                  {form.watch('characterId') && form.watch('characterId') !== 'none' && (
+                      <FormField
+                      control={form.control}
+                      name="outfitId"
+                      render={({ field }) => (
+                          <FormItem>
+                          <FormLabel className="flex items-center">
+                              <Shirt className="mr-2 h-4 w-4" />
+                              Select Outfit
+                          </FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                              <SelectTrigger disabled={availableOutfits.length === 0}>
+                                  <SelectValue placeholder={availableOutfits.length > 0 ? "Select an outfit..." : "No outfits in library"} />
+                              </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                              <SelectItem value="none">Default Outfit</SelectItem>
+                              {availableOutfits.map((outfit) => (
+                                  <SelectItem key={outfit.id} value={outfit.id}>{outfit.name}</SelectItem>
+                              ))}
+                              </SelectContent>
+                          </Select>
+                          <FormDescription>
+                              Choose a saved outfit for the selected character.
+                          </FormDescription>
+                          <FormMessage />
+                          </FormItem>
+                      )}
+                      />
+                  )}
+
+                  <FormField
+                    control={form.control}
+                    name="promptType"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel>Prompt Type</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            value={field.value}
+                            className="flex space-x-4"
+                          >
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="artistic" />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                Artistic
+                              </FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="json" />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                JSON
+                              </FormLabel>
+                            </FormItem>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  
+                  <div className="space-y-2 p-4 border rounded-lg">
+                      <h3 className="text-lg font-semibold">Generation Settings</h3>
+                      <div className="flex items-center gap-2">
+                          <Button type="button" size="sm" onClick={handleSaveFavorites}><Star className="mr-2 h-4 w-4" /> Save as Favorite</Button>
+                          <Button type="button" size="sm" variant="outline" onClick={resetFavoriteSettings}><Trash2 className="mr-2 h-4 w-4" /> Reset</Button>
+                      </div>
+
+                      <FormField
+                      control={form.control}
+                      name="artStyle"
+                      render={({ field }) => (
+                          <FormItem>
+                          <FormLabel>Art Style</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Select an art style" />
+                              </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                              <SelectItem value="none">None</SelectItem>
+                              {photoStyles.map((style) => (
+                                  <SelectItem key={style} value={style}>{style}</SelectItem>
+                              ))}
+                              </SelectContent>
+                          </Select>
+                          <FormMessage />
+                          </FormItem>
+                      )}
+                      />
+
+                      {isArtisticPrompt && (<>
+                      <FormField
+                          control={form.control}
+                          name="cameraAngle"
+                          render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Camera Angle</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                  <SelectTrigger>
+                                  <SelectValue placeholder="Select a camera angle" />
+                                  </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                  <SelectItem value="none">None</SelectItem>
+                                  {cameraAngles.map((angle) => (
+                                  <SelectItem key={angle} value={angle}>{angle}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                              </Select>
+                              <FormMessage />
+                          </FormItem>
+                          )}
+                      />
+                      <FormField
+                          control={form.control}
+                          name="lightingStyle"
+                          render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Lighting Style</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                  <SelectTrigger>
+                                  <SelectValue placeholder="Select a lighting style" />
+                                  </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                  <SelectItem value="none">None</SelectItem>
+                                  {lightingStyles.map((style) => (
+                                  <SelectItem key={style} value={style}>{style}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                              </Select>
+                              <FormMessage />
+                          </FormItem>
+                          )}
+                      />
+                      <FormField
+                          control={form.control}
+                          name="camera"
+                          render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Camera</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                  <SelectTrigger>
+                                  <SelectValue placeholder="Select a camera" />
+                                  </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                  <SelectItem value="none">None</SelectItem>
+                                  {cameras.map((camera) => (
+                                  <SelectItem key={camera} value={camera}>{camera}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                              </Select>
+                              <FormMessage />
+                          </FormItem>
+                          )}
+                      />
+                      <FormField
+                          control={form.control}
+                          name="filmType"
+                          render={({ field }) => (
+                          <FormItem>
+                              <FormLabel>Film Type</FormLabel>
+                              <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                                  <SelectTrigger>
+                                  <SelectValue placeholder="Select a film type" />
+                                  </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                                  <SelectItem value="none">None</SelectItem>
+                                  {filmTypes.map((film) => (
+                                  <SelectItem key={film} value={film}>{film}</SelectItem>
+                                  ))}
+                              </SelectContent>
+                              </Select>
+                              <FormMessage />
+                          </FormItem>
+                          )}
+                      />
+                      </>)}
+                  </div>
 
 
-                <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand className="mr-2 h-4 w-4" />}
-                  {editingScene ? 'Update Prompt' : 'Generate Prompt'}
-                </Button>
-
-                {generatedPrompt && (
-                   <Button 
-                    type="button" 
-                    variant="secondary"
-                    onClick={form.handleSubmit((data) => handleGeneration(data, true))} 
-                    disabled={isRegenerating || isLoading} 
-                    className="w-full"
-                  >
-                    {isRegenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCw className="mr-2 h-4 w-4" />}
-                    Regenerate with new settings
+                  <Button type="submit" disabled={isLoading} className="w-full">
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand className="mr-2 h-4 w-4" />}
+                    {editingScene ? 'Update Prompt' : 'Generate Prompt'}
                   </Button>
-                )}
-              </form>
-            </Form>
-          </CardContent>
-        </Card>
 
-        <Card className="sticky top-8">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <div>
-                <CardTitle>Generated Prompt</CardTitle>
-                <CardDescription>Your AI-generated scene prompt will appear here.</CardDescription>
-            </div>
-            {generatedPrompt && (
-              <Button variant="ghost" size="icon" onClick={() => copyToClipboard(generatedPrompt)}>
-                <Copy className="h-4 w-4" />
-                <span className="sr-only">Copy Prompt</span>
+                  {generatedPrompt && (
+                    <Button 
+                      type="button" 
+                      variant="secondary"
+                      onClick={form.handleSubmit((data) => handleGeneration(data, true))} 
+                      disabled={isRegenerating || isLoading} 
+                      className="w-full"
+                    >
+                      {isRegenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCw className="mr-2 h-4 w-4" />}
+                      Regenerate with new settings
+                    </Button>
+                  )}
+                </form>
+              </Form>
+            </CardContent>
+          </Card>
+
+          <Card className="sticky top-8">
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                  <CardTitle>Generated Prompt</CardTitle>
+                  <CardDescription>Your AI-generated scene prompt will appear here.</CardDescription>
+              </div>
+              {generatedPrompt && (
+                <Button variant="ghost" size="icon" onClick={() => copyToClipboard(generatedPrompt)}>
+                  <Copy className="h-4 w-4" />
+                  <span className="sr-only">Copy Prompt</span>
+                </Button>
+              )}
+            </CardHeader>
+            <CardContent className="min-h-[300px]">
+              {isLoading || isRegenerating ? (
+                <div className="flex items-center justify-center h-full">
+                  <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                </div>
+              ) : generatedPrompt ? (
+                <Textarea readOnly value={generatedPrompt} className="h-full min-h-[400px] text-base" />
+              ) : (
+                <div className="flex items-center justify-center h-full text-muted-foreground">
+                  Your prompt is waiting to be created...
+                </div>
+              )}
+            </CardContent>
+            <CardFooter>
+              <Button onClick={saveScene} disabled={!generatedPrompt || isLoading || isRegenerating} className="w-full">
+                <Save className="mr-2 h-4 w-4" />
+                {editingScene ? 'Update Scene' : 'Save to Library'}
               </Button>
-            )}
-          </CardHeader>
-          <CardContent className="min-h-[300px]">
-            {isLoading || isRegenerating ? (
-              <div className="flex items-center justify-center h-full">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              </div>
-            ) : generatedPrompt ? (
-              <Textarea readOnly value={generatedPrompt} className="h-full min-h-[400px] text-base" />
-            ) : (
-              <div className="flex items-center justify-center h-full text-muted-foreground">
-                Your prompt is waiting to be created...
-              </div>
-            )}
-          </CardContent>
-          <CardFooter>
-            <Button onClick={saveScene} disabled={!generatedPrompt || isLoading || isRegenerating} className="w-full">
-              <Save className="mr-2 h-4 w-4" />
-              {editingScene ? 'Update Scene' : 'Save to Library'}
-            </Button>
-          </CardFooter>
-        </Card>
+            </CardFooter>
+          </Card>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
 
@@ -620,9 +626,13 @@ export default function SceneCreationPage() {
         setIsClient(true);
     }, []);
 
+    if (!isClient) {
+        return <div>Loading...</div>;
+    }
+
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            {isClient ? <SceneCreationForm /> : <div>Loading...</div>}
+            <SceneCreationForm />
         </Suspense>
     )
 }
