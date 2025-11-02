@@ -15,18 +15,13 @@ import { artisticPromptInstructions } from '@/lib/artistic-prompt-instructions';
 import { jsonPromptInstructions } from '@/lib/json-prompt-instructions';
 
 const GenerateCharacterPromptInputSchema = z.object({
-  genre: z.string().describe('The genre of the story, e.g., fantasy, sci-fi, historical.'),
-  name: z.string().describe('The name of the character.'),
-  age: z.number().describe('The age of the character.'),
-  occupation: z.string().describe('The occupation of the character.'),
-  personality: z.string().describe('The personality of the character.'),
-  appearance: z.string().describe('The appearance of the character.'),
-  motivations: z.string().describe('The motivations of the character.'),
+  description: z.string().describe('A general description of the character.'),
   promptType: PromptTypeSchema,
 });
 export type GenerateCharacterPromptInput = z.infer<typeof GenerateCharacterPromptInputSchema>;
 
 const GenerateCharacterPromptOutputSchema = z.object({
+  name: z.string().describe('The name of the character, extracted from the description.'),
   prompt: z.string().describe('The generated prompt for character creation.'),
 });
 export type GenerateCharacterPromptOutput = z.infer<typeof GenerateCharacterPromptOutputSchema>;
@@ -41,25 +36,19 @@ const prompt = ai.definePrompt({
   output: {schema: GenerateCharacterPromptOutputSchema},
   prompt: `Вы — инженер по промптам, специализирующийся на создании подробных промптов для дизайна персонажей.
 
+  Проанализируйте следующее описание персонажа. Извлеките из него имя персонажа и сгенерируйте подробный промпт для создания изображения этого персонажа.
+  Если имя не указано явно, придумайте его.
+  Промпт должен включать детали о внешности, одежде и окружении персонажа, соответствующие его образу.
+
   {{#ifCond promptType "==" "artistic"}}
   ${artisticPromptInstructions}
   {{/ifCond}}
   {{#ifCond promptType "==" "json"}}
   ${jsonPromptInstructions}
   {{/ifCond}}
-
-  На основе предоставленных данных о персонаже, сгенерируйте промпт, который можно использовать для создания изображения персонажа.
-  Промпт должен включать детали о внешности, одежде и окружении персонажа, соответствующие его жанру, профессии и мотивации.
-
-  Жанр: {{{genre}}}
-  Имя: {{{name}}}
-  Возраст: {{{age}}}
-  Профессия: {{{occupation}}}
-  Характер: {{{personality}}}
-  Внешность: {{{appearance}}}
-  Мотивация: {{{motivations}}}
-
-  Сгенерированный промпт:`,
+  
+  Описание персонажа: {{{description}}}
+  `,
 });
 
 const generateCharacterPromptFlow = ai.defineFlow(

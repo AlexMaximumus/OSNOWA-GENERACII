@@ -5,13 +5,7 @@ export type PromptType = z.infer<typeof PromptTypeSchema>;
 
 // For form validation
 export const CharacterFormSchema = z.object({
-  name: z.string().min(1, "Имя обязательно."),
-  age: z.coerce.number().min(0, "Возраст должен быть положительным числом."),
-  occupation: z.string().min(1, "Профессия обязательна."),
-  genre: z.string().min(1, "Жанр обязателен."),
-  personality: z.string().min(1, "Характер обязателен."),
-  appearance: z.string().min(1, "Внешность обязательна."),
-  motivations: z.string().min(1, "Мотивация обязательна."),
+  description: z.string().min(1, "Описание обязательно."),
   promptType: PromptTypeSchema.default("artistic"),
 });
 export type CharacterFormData = z.infer<typeof CharacterFormSchema>;
@@ -19,6 +13,7 @@ export type CharacterFormData = z.infer<typeof CharacterFormSchema>;
 // For storage
 export type Character = CharacterFormData & {
   id: string;
+  name: string; // Extracted by AI
   prompt: string;
   createdAt: string; // Use ISO string for serialization
 };

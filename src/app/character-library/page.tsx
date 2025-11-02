@@ -17,8 +17,8 @@ function CharacterCard({ character, onDelete }: { character: Character, onDelete
     <Card className="flex flex-col">
       <CardHeader>
         <CardTitle className="font-headline">{character.name}</CardTitle>
-        <CardDescription>
-          {character.age} лет, {character.occupation}
+        <CardDescription className="line-clamp-2">
+            {character.description}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">

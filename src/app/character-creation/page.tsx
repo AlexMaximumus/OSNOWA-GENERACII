@@ -8,7 +8,6 @@ import { generateCharacterPrompt } from '@/ai/flows/generate-character-prompt';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/use-local-storage';
@@ -16,7 +15,8 @@ import { Character, CharacterFormData, CharacterFormSchema } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 export default function CharacterCreationPage() {
-  const [generatedPrompt, setGeneratedPrompt] = useState<string>('');
+  const [generatedPrompt, setGeneratedPrompt] = useState('');
+  const [characterName, setCharacterName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [lastGeneratedCharacter, setLastGeneratedCharacter] = useState<CharacterFormData | null>(null);
 
@@ -26,13 +26,7 @@ export default function CharacterCreationPage() {
   const form = useForm<CharacterFormData>({
     resolver: zodResolver(CharacterFormSchema),
     defaultValues: {
-      name: '',
-      age: 18,
-      occupation: '',
-      genre: '',
-      personality: '',
-      appearance: '',
-      motivations: '',
+      description: '',
       promptType: 'artistic',
     },
   });
@@ -40,15 +34,17 @@ export default function CharacterCreationPage() {
   async function onSubmit(data: CharacterFormData) {
     setIsLoading(true);
     setGeneratedPrompt('');
+    setCharacterName('');
     setLastGeneratedCharacter(null);
     try {
       const result = await generateCharacterPrompt(data);
-      if (result.prompt) {
+      if (result.prompt && result.name) {
         setGeneratedPrompt(result.prompt);
+        setCharacterName(result.name);
         setLastGeneratedCharacter(data);
         toast({
           title: 'Промпт создан',
-          description: 'Ваш промпт для персонажа был успешно создан.',
+          description: `Ваш промпт для персонажа "${result.name}" был успешно создан.`,
         });
       } else {
         throw new Error('Промпт не был сгенерирован.');
@@ -66,11 +62,12 @@ export default function CharacterCreationPage() {
   }
 
   function saveCharacter() {
-    if (!generatedPrompt || !lastGeneratedCharacter) return;
+    if (!generatedPrompt || !lastGeneratedCharacter || !characterName) return;
 
     const newCharacter: Character = {
       id: crypto.randomUUID(),
       ...lastGeneratedCharacter,
+      name: characterName,
       prompt: generatedPrompt,
       createdAt: new Date().toISOString(),
     };
@@ -78,7 +75,7 @@ export default function CharacterCreationPage() {
     setCharacters([newCharacter, ...characters]);
     toast({
       title: 'Персонаж сохранен',
-      description: `${lastGeneratedCharacter.name} был добавлен в вашу библиотеку.`,
+      description: `${characterName} был добавлен в вашу библиотеку.`,
     });
   }
 
@@ -89,7 +86,7 @@ export default function CharacterCreationPage() {
         <Card>
           <CardHeader>
             <CardTitle>Детали персонажа</CardTitle>
-            <CardDescription>Заполните форму, чтобы сгенерировать промпт для персонажа.</CardDescription>
+            <CardDescription>Опишите вашего персонажа в общих чертах.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -130,92 +127,16 @@ export default function CharacterCreationPage() {
                 />
                 <FormField
                   control={form.control}
-                  name="name"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Имя</FormLabel>
+                      <FormLabel>Описание персонажа</FormLabel>
                       <FormControl>
-                        <Input placeholder="например, Алистэр Крофт" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <div className="grid grid-cols-2 gap-4">
-                   <FormField
-                    control={form.control}
-                    name="age"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Возраст</FormLabel>
-                        <FormControl>
-                          <Input type="number" placeholder="например, 35" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                   <FormField
-                    control={form.control}
-                    name="genre"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Жанр</FormLabel>
-                        <FormControl>
-                          <Input placeholder="например, Научная фантастика, Фэнтези" {...field} />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-                <FormField
-                  control={form.control}
-                  name="occupation"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Профессия</FormLabel>
-                      <FormControl>
-                        <Input placeholder="например, Межзвездный археолог" {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="personality"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Черты характера</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Опишите его характер..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="appearance"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Внешность</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Опишите его внешность..." {...field} />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="motivations"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Мотивация</FormLabel>
-                      <FormControl>
-                        <Textarea placeholder="Что им движет?" {...field} />
+                        <Textarea 
+                          rows={15}
+                          placeholder="Например: Аларик, мрачный эльфийский следопыт с седыми волосами и шрамом на глазу. Он одет в потертую кожаную броню и носит лук из тисового дерева. Его цель - отомстить за свою семью." 
+                          {...field} 
+                        />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
