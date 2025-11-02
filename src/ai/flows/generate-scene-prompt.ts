@@ -68,6 +68,8 @@ const generateScenePromptFlow = ai.defineFlow(
 
 If a character description is provided, you MUST seamlessly integrate it into the main scene description. The character should be the central focus of the scene.
 
+If the description includes a base location prompt and additional details, you must synthesize them. Use the base location prompt as the foundation and expertly weave the additional scene details into it to create a single, cohesive, and extremely detailed final prompt.
+
 If the user has provided specific parameters (style, camera, etc.), use them. If not, choose suitable options yourself based on the general description.
 `;
   
@@ -106,3 +108,5 @@ ${input.filmType && input.filmType !== 'none' ? `Film Type: ${input.filmType}` :
     return output!;
   }
 );
+
+    

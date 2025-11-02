@@ -112,13 +112,14 @@ function SceneCreationForm() {
   };
 
   const getLocationInfo = (data: SceneFormData): string => {
+    let description = data.sceneDescription;
     if (data.locationId && data.locationId !== 'none') {
         const location = locations.find(l => l.id === data.locationId);
         if (location) {
-            return `Use this existing location prompt: ${location.prompt}`;
+            description = `Base Location Prompt: ${location.prompt}\n\nAdditional Scene Details: ${data.sceneDescription}`;
         }
     }
-    return data.sceneDescription;
+    return description;
   };
 
   async function handleGeneration(data: SceneFormData, isRegen: boolean) {
@@ -216,7 +217,6 @@ function SceneCreationForm() {
   
   const currentPromptType = form.watch('promptType');
   const isArtisticPrompt = currentPromptType === 'artistic';
-  const selectedCharacterId = form.watch('characterId');
   const selectedLocationId = form.watch('locationId');
 
   const handleSceneSelect = (sceneId: string) => {
@@ -313,9 +313,12 @@ function SceneCreationForm() {
                       <FormControl>
                         <Textarea 
                           rows={8}
-                          placeholder="e.g., A quiet, rain-slicked alley in Shinjuku at midnight, illuminated by a single flickering neon sign. A sense of loneliness and mystery." 
+                          placeholder={
+                            selectedLocationId !== 'none'
+                              ? "Add specific details for this scene (e.g., character actions, time of day, specific mood). The base location details will be included automatically."
+                              : "e.g., A quiet, rain-slicked alley in Shinjuku at midnight, illuminated by a single flickering neon sign. A sense of loneliness and mystery."
+                          } 
                           {...field}
-                          disabled={selectedLocationId !== 'none'}
                         />
                       </FormControl>
                       <FormMessage />
@@ -355,7 +358,7 @@ function SceneCreationForm() {
                   )}
                 />
 
-                {selectedCharacterId && selectedCharacterId !== 'none' && (
+                {form.watch('characterId') && form.watch('characterId') !== 'none' && (
                     <FormField
                     control={form.control}
                     name="outfitId"
@@ -617,3 +620,5 @@ export default function SceneCreationPage() {
         </Suspense>
     )
 }
+
+    
