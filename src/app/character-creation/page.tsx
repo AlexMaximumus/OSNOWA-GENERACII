@@ -44,6 +44,7 @@ export default function CharacterCreationPage() {
       camera: '',
       filmType: '',
       promptType: 'artistic',
+      creationType: 'inScene',
     },
   });
   
@@ -106,6 +107,8 @@ export default function CharacterCreationPage() {
     });
   }
 
+  const creationType = form.watch('creationType');
+
   return (
     <div className="container mx-auto p-4 md:p-8">
       <h1 className="text-3xl font-headline font-bold mb-6">Create New Character</h1>
@@ -120,10 +123,10 @@ export default function CharacterCreationPage() {
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
                  <FormField
                   control={form.control}
-                  name="promptType"
+                  name="creationType"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
-                      <FormLabel>Prompt Type</FormLabel>
+                      <FormLabel>Creation Type</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
@@ -132,18 +135,18 @@ export default function CharacterCreationPage() {
                         >
                           <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl>
-                              <RadioGroupItem value="artistic" />
+                              <RadioGroupItem value="inScene" />
                             </FormControl>
                             <FormLabel className="font-normal">
-                              Artistic
+                              In Scene
                             </FormLabel>
                           </FormItem>
                           <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl>
-                              <RadioGroupItem value="json" />
+                              <RadioGroupItem value="studio" />
                             </FormControl>
                             <FormLabel className="font-normal">
-                              JSON
+                              Studio Shot
                             </FormLabel>
                           </FormItem>
                         </RadioGroup>
@@ -152,6 +155,44 @@ export default function CharacterCreationPage() {
                     </FormItem>
                   )}
                 />
+
+                {creationType === 'inScene' && (
+                  <FormField
+                    control={form.control}
+                    name="promptType"
+                    render={({ field }) => (
+                      <FormItem className="space-y-3">
+                        <FormLabel>Prompt Type</FormLabel>
+                        <FormControl>
+                          <RadioGroup
+                            onValueChange={field.onChange}
+                            defaultValue={field.value}
+                            className="flex space-x-4"
+                          >
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="artistic" />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                Artistic
+                              </FormLabel>
+                            </FormItem>
+                            <FormItem className="flex items-center space-x-2 space-y-0">
+                              <FormControl>
+                                <RadioGroupItem value="json" />
+                              </FormControl>
+                              <FormLabel className="font-normal">
+                                JSON
+                              </FormLabel>
+                            </FormItem>
+                          </RadioGroup>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+
                 <FormField
                   control={form.control}
                   name="description"
@@ -191,94 +232,99 @@ export default function CharacterCreationPage() {
                     </FormItem>
                   )}
                 />
-                <FormField
-                  control={form.control}
-                  name="cameraAngle"
-                  render={({ field }) => (
-                     <FormItem>
-                      <FormLabel>Camera Angle</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a camera angle" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {cameraAngles.map((angle) => (
-                            <SelectItem key={angle} value={angle}>{angle}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="lightingStyle"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Lighting Style</FormLabel>
-                       <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a lighting style" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {lightingStyles.map((style) => (
-                            <SelectItem key={style} value={style}>{style}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="camera"
-                  render={({ field }) => (
-                     <FormItem>
-                      <FormLabel>Camera</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a camera" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {cameras.map((camera) => (
-                            <SelectItem key={camera} value={camera}>{camera}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                 <FormField
-                  control={form.control}
-                  name="filmType"
-                  render={({ field }) => (
-                     <FormItem>
-                      <FormLabel>Film Type</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a film type" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {filmTypes.map((film) => (
-                            <SelectItem key={film} value={film}>{film}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+
+                {creationType === 'inScene' && (
+                  <>
+                    <FormField
+                      control={form.control}
+                      name="cameraAngle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Camera Angle</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a camera angle" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {cameraAngles.map((angle) => (
+                                <SelectItem key={angle} value={angle}>{angle}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="lightingStyle"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Lighting Style</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a lighting style" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {lightingStyles.map((style) => (
+                                <SelectItem key={style} value={style}>{style}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="camera"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Camera</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a camera" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {cameras.map((camera) => (
+                                <SelectItem key={camera} value={camera}>{camera}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="filmType"
+                      render={({ field }) => (
+                        <FormItem>
+                          <FormLabel>Film Type</FormLabel>
+                          <Select onValueChange={field.onChange} defaultValue={field.value}>
+                            <FormControl>
+                              <SelectTrigger>
+                                <SelectValue placeholder="Select a film type" />
+                              </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                              {filmTypes.map((film) => (
+                                <SelectItem key={film} value={film}>{film}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </>
+                )}
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Generate Prompt

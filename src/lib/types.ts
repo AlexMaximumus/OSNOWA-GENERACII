@@ -3,6 +3,9 @@ import { z } from "zod";
 export const PromptTypeSchema = z.enum(["artistic", "json"]);
 export type PromptType = z.infer<typeof PromptTypeSchema>;
 
+export const CreationTypeSchema = z.enum(["inScene", "studio"]);
+export type CreationType = z.infer<typeof CreationTypeSchema>;
+
 // For form validation
 export const CharacterFormSchema = z.object({
   description: z.string().min(1, "Description is required."),
@@ -12,6 +15,7 @@ export const CharacterFormSchema = z.object({
   camera: z.string().optional(),
   filmType: z.string().optional(),
   promptType: PromptTypeSchema.default("artistic"),
+  creationType: CreationTypeSchema.default("inScene"),
 });
 export type CharacterFormData = z.infer<typeof CharacterFormSchema>;
 

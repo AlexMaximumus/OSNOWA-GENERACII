@@ -10,9 +10,10 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import { PromptTypeSchema } from '@/lib/types';
+import { PromptTypeSchema, CreationTypeSchema } from '@/lib/types';
 import { artisticPromptInstructions } from '@/lib/artistic-prompt-instructions';
 import { jsonPromptInstructions } from '@/lib/json-prompt-instructions';
+import { studioPromptInstructions } from '@/lib/studio-prompt-instructions';
 
 const GenerateCharacterPromptInputSchema = z.object({
   description: z.string().describe('A general description of the character.'),
@@ -31,6 +32,7 @@ const GenerateCharacterPromptInputSchema = z.object({
   camera: z.string().optional().describe('The camera used for the shot.'),
   filmType: z.string().optional().describe('The type of film used.'),
   promptType: PromptTypeSchema,
+  creationType: CreationTypeSchema,
 });
 export type GenerateCharacterPromptInput = z.infer<typeof GenerateCharacterPromptInputSchema>;
 
@@ -60,19 +62,23 @@ Analyze the following character description. Extract the character's name and ge
 2. A separate, detailed physical description of the character from head to toe.
 
 If a name is not explicitly provided, invent one.
-
-If the user has provided specific parameters (style, camera, etc.), use them. If not, choose suitable options yourself based on the general description.
 `;
 
-    if (input.promptType === 'artistic') {
-      basePrompt += `
-You must generate an artistic prompt. The prompt should include details about the character's appearance, clothing, and environment that match their persona.
-${artisticPromptInstructions}`;
+    if (input.creationType === 'studio') {
+        basePrompt += studioPromptInstructions;
     } else {
-      basePrompt += `
-You must generate a JSON prompt. Fill in the JSON structure based on the description.
-${jsonPromptInstructions}`;
+        if (input.promptType === 'artistic') {
+            basePrompt += artisticPromptInstructions;
+        } else {
+            basePrompt += jsonPromptInstructions;
+        }
+
+        if (input.promptType === 'artistic') {
+             basePrompt += `
+If the user has provided specific parameters (style, camera, etc.), use them. If not, choose suitable options yourself based on the general description.`;
+        }
     }
+
 
     const finalPrompt = `${basePrompt}
   
