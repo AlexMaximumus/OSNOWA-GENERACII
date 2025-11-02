@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Copy, Loader2, Save, Wand, Users, RotateCw, Shirt } from 'lucide-react';
+import { Copy, Loader2, Save, Wand, Users, RotateCw, Shirt, Library } from 'lucide-react';
 import { generateScenePrompt } from '@/ai/flows/generate-scene-prompt';
 import { regenerateScenePrompt } from '@/ai/flows/regenerate-scene-prompt';
 import { Button } from '@/components/ui/button';
@@ -50,29 +50,32 @@ function SceneCreationForm() {
     },
   });
   
-  // Unlike before, we don't filter outfits here. All outfits are available.
   const availableOutfits = outfits;
+
+  const populateFormWithScene = (scene: Scene) => {
+    setEditingScene(scene);
+    form.reset({
+      ...scene,
+      characterId: scene.characterId || 'none',
+      outfitId: scene.outfitId || 'none',
+    });
+    if (scene.prompt) {
+      setGeneratedPrompt(scene.prompt);
+    }
+    if (scene.sceneDescription) {
+        setLastGeneratedData(scene);
+    }
+  };
 
   useEffect(() => {
     const sceneId = searchParams.get('id');
     if (sceneId) {
-      const sceneToEdit = scenes.find(s => s.id === sceneId) ?? Object.fromEntries(searchParams.entries()) as unknown as Scene;
+      const sceneToEdit = scenes.find(s => s.id === sceneId);
       if (sceneToEdit) {
-        setEditingScene(sceneToEdit);
-        form.reset({
-          ...sceneToEdit,
-          characterId: sceneToEdit.characterId || 'none',
-          outfitId: sceneToEdit.outfitId || 'none',
-        });
-        if (sceneToEdit.prompt) {
-          setGeneratedPrompt(sceneToEdit.prompt);
-        }
-        if (sceneToEdit.sceneDescription) {
-            setLastGeneratedData(sceneToEdit);
-        }
+        populateFormWithScene(sceneToEdit);
       }
     }
-  }, [searchParams, scenes, form]);
+  }, [searchParams, scenes]);
 
 
   const copyToClipboard = (text: string) => {
@@ -90,12 +93,10 @@ function SceneCreationForm() {
     
     const outfit = outfits.find(o => o.id === data.outfitId);
 
-    // Start with the character's base appearance description.
     let fullDescription = `Appearance: ${character.appearanceDescription}`;
 
-    // If an outfit is selected, append its detailed description.
     if (outfit) {
-        fullDescription += `\n\nOutfit: ${outfit.prompt}`; // outfit.prompt now contains the detailed description
+        fullDescription += `\n\nOutfit: ${outfit.prompt}`;
     }
 
     return fullDescription;
@@ -160,7 +161,7 @@ function SceneCreationForm() {
 
     const sceneDataToSave = {
         ...lastGeneratedData,
-        ...currentFormData, // This includes characterId and now the assigned outfitId
+        ...currentFormData,
         prompt: generatedPrompt,
     };
 
@@ -187,7 +188,6 @@ function SceneCreationForm() {
         });
     }
     
-    // Also update the characterId for the selected outfit
     if (currentFormData.outfitId && currentFormData.outfitId !== 'none' && currentFormData.characterId && currentFormData.characterId !== 'none') {
         setOutfits(outfits.map(o => o.id === currentFormData.outfitId ? { ...o, characterId: currentFormData.characterId! } : o));
     }
@@ -196,6 +196,20 @@ function SceneCreationForm() {
   const currentPromptType = form.watch('promptType');
   const isArtisticPrompt = currentPromptType === 'artistic';
   const selectedCharacterId = form.watch('characterId');
+
+  const handleSceneSelect = (sceneId: string) => {
+    if (sceneId === 'none') {
+      form.reset();
+      setEditingScene(null);
+      setGeneratedPrompt(null);
+      setLastGeneratedData(null);
+      return;
+    }
+    const sceneToLoad = scenes.find(s => s.id === sceneId);
+    if (sceneToLoad) {
+      populateFormWithScene(sceneToLoad);
+    }
+  };
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -209,6 +223,24 @@ function SceneCreationForm() {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit((data) => handleGeneration(data, false))} className="space-y-4">
+                
+                <FormItem>
+                  <FormLabel className="flex items-center"><Library className="mr-2 h-4 w-4" />Load from Library</FormLabel>
+                  <Select onValueChange={handleSceneSelect} value={editingScene?.id || 'none'}>
+                    <FormControl>
+                      <SelectTrigger disabled={scenes.length === 0}>
+                        <SelectValue placeholder={scenes.length > 0 ? "Select a scene to edit..." : "No scenes in library"} />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="none">Create a new scene</SelectItem>
+                      {scenes.map((scene) => (
+                        <SelectItem key={scene.id} value={scene.id}>{scene.artStyle}: {scene.sceneDescription.substring(0, 50)}...</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </FormItem>
+
                 <FormField
                   control={form.control}
                   name="sceneDescription"
