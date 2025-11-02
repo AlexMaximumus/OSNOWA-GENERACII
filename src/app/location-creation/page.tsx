@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Copy, Loader2, Save, Map, Star, Trash2 } from 'lucide-react';
@@ -30,6 +30,11 @@ export default function LocationCreationPage() {
   const [generatedData, setGeneratedData] = useState<GeneratedData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastGeneratedLocation, setLastGeneratedLocation] = useState<LocationFormData | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const { toast } = useToast();
   const [locations, setLocations] = useLocalStorage<Location[]>('locations', []);
@@ -47,6 +52,15 @@ export default function LocationCreationPage() {
       promptType: 'artistic',
     },
   });
+
+   useEffect(() => {
+    if (isClient) {
+      form.reset({
+        ...form.getValues(),
+        ...favoriteSettings,
+      });
+    }
+  }, [isClient, favoriteSettings, form]);
   
   const handleSaveFavorites = () => {
     const currentSettings = form.getValues();
@@ -108,6 +122,10 @@ export default function LocationCreationPage() {
       title: 'Location Saved',
       description: `${generatedData.name} has been added to your library.`,
     });
+  }
+
+  if (!isClient) {
+    return <div>Loading...</div>;
   }
 
   return (

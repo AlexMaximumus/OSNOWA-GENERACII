@@ -340,8 +340,8 @@ function SceneCreationForm() {
                           form.setValue('outfitId', 'none');
                       }} value={field.value}>
                         <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select a character..." />
+                          <SelectTrigger disabled={characters.length === 0}>
+                            <SelectValue placeholder={characters.length > 0 ? "Select a character..." : "No characters in library"} />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -615,13 +615,14 @@ function SceneCreationForm() {
 }
 
 export default function SceneCreationPage() {
+    const [isClient, setIsClient] = useState(false);
+    useEffect(() => {
+        setIsClient(true);
+    }, []);
+
     return (
         <Suspense fallback={<div>Loading...</div>}>
-            <SceneCreationForm />
+            {isClient ? <SceneCreationForm /> : <div>Loading...</div>}
         </Suspense>
     )
 }
-
-    
-
-    

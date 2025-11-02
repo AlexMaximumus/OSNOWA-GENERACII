@@ -26,8 +26,7 @@ function SceneCard({ scene, onDelete }: { scene: Scene, onDelete: (id: string) =
     };
 
     const handleEdit = () => {
-      const query = new URLSearchParams(scene as any).toString();
-      router.push(`/scene-creation?${query}`);
+      router.push(`/scene-creation?id=${scene.id}`);
     };
 
   return (

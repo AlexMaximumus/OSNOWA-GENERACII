@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Copy, Loader2, Save, Star, Trash2 } from 'lucide-react';
@@ -31,6 +31,11 @@ export default function CharacterCreationPage() {
   const [generatedData, setGeneratedData] = useState<GeneratedData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [lastGeneratedCharacter, setLastGeneratedCharacter] = useState<CharacterFormData | null>(null);
+  const [isClient, setIsClient] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
   const { toast } = useToast();
   const [characters, setCharacters] = useLocalStorage<Character[]>('characters', []);
@@ -49,6 +54,15 @@ export default function CharacterCreationPage() {
       creationType: 'inScene',
     },
   });
+
+  useEffect(() => {
+    if (isClient) {
+      form.reset({
+        ...form.getValues(),
+        ...favoriteSettings,
+      });
+    }
+  }, [isClient, favoriteSettings, form]);
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -115,6 +129,10 @@ export default function CharacterCreationPage() {
   }
 
   const creationType = form.watch('creationType');
+  
+  if (!isClient) {
+    return <div>Loading...</div>;
+  }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
