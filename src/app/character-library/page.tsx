@@ -5,7 +5,7 @@ import { useLocalStorage } from '@/hooks/use-local-storage';
 import { Character, CharacterFormData, CharacterFormSchema } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Copy, Trash2, UserPlus, Edit, Save, X } from 'lucide-react';
+import { Copy, Trash2, UserPlus, Edit, Save, X, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -408,7 +408,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                     <div className="font-medium">Camera Angle:</div>
                     <div className="text-muted-foreground">{character.cameraAngle || 'N/A'}</div>
                     <div className="font-medium">Lighting:</div>
-                    <div className="text-muted-foreground">{character.lightingStyle || 'N/A'}</div>
+                    <div className="text-muted-foreground">{character.lightingStyle || 'N-A'}</div>
                     <div className="font-medium">Camera:</div>
                     <div className="text-muted-foreground">{character.camera || 'N/A'}</div>
                     <div className="font-medium">Film Type:</div>
