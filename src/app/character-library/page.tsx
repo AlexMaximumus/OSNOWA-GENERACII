@@ -23,11 +23,13 @@ import { cameraAngles } from '@/lib/camera-angles';
 import { lightingStyles } from '@/lib/lighting-styles';
 import { cameras } from '@/lib/cameras';
 import { filmTypes } from '@/lib/film-types';
+import { generateCharacterPrompt } from '@/ai/flows/generate-character-prompt';
 
 
-function CharacterCard({ character, onDelete, onUpdate }: { character: Character, onDelete: (id: string) => void, onUpdate: (id: string, data: CharacterFormData) => void }) {
+function CharacterCard({ character, onDelete, onUpdate }: { character: Character, onDelete: (id: string) => void, onUpdate: (id: string, data: CharacterFormData, newPromptData?: { prompt: string, appearanceDescription: string, name: string }) => void }) {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   const form = useForm<CharacterFormData>({
     resolver: zodResolver(CharacterFormSchema),
@@ -69,9 +71,37 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
     });
   };
 
-  const handleSave = (data: CharacterFormData) => {
-    onUpdate(character.id, data);
-    setIsEditing(false);
+  const handleSave = async (data: CharacterFormData) => {
+    const hasChanges = JSON.stringify(form.formState.defaultValues) !== JSON.stringify(data);
+
+    if (!hasChanges) {
+       setIsEditing(false);
+       return;
+    }
+    
+    setIsRegenerating(true);
+    try {
+        const result = await generateCharacterPrompt(data);
+        if (result.prompt && result.name && result.appearanceDescription) {
+            onUpdate(character.id, data, { prompt: result.prompt, appearanceDescription: result.appearanceDescription, name: result.name });
+            toast({
+                title: 'Character Regenerated',
+                description: 'The prompt and details have been updated.',
+            });
+            setIsEditing(false);
+        } else {
+            throw new Error('Failed to regenerate character prompt.');
+        }
+    } catch (error) {
+        console.error('Error regenerating character:', error);
+        toast({
+            variant: 'destructive',
+            title: 'Regeneration Failed',
+            description: 'Could not update the character. Please try again.',
+        });
+    } finally {
+        setIsRegenerating(false);
+    }
   };
 
   const creationType = form.watch('creationType');
@@ -239,7 +269,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a lighting style" />
-                          </SelectTrigger>
+                          </Trigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
@@ -262,7 +292,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a camera" />
-                          </SelectTrigger>
+                          </Trigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
@@ -285,7 +315,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a film type" />
-                          </SelectTrigger>
+                          </Trigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
@@ -300,13 +330,14 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                 />
             </CardContent>
             <CardFooter className="flex justify-end items-center gap-2 mt-4">
-              <Button variant="ghost" size="sm" onClick={handleCancel} type="button">
+              <Button variant="ghost" size="sm" onClick={handleCancel} type="button" disabled={isRegenerating}>
                 <X className="h-4 w-4 mr-1" />
                 Cancel
               </Button>
-              <Button variant="default" size="sm" type="submit">
+              <Button variant="default" size="sm" type="submit" disabled={isRegenerating}>
+                {isRegenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                 <Save className="h-4 w-4 mr-1" />
-                Save
+                Save & Regenerate
               </Button>
             </CardFooter>
           </form>
@@ -319,7 +350,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
     <Card className="flex flex-col">
       <CardHeader>
         <div className="flex justify-between items-start">
-          <div className="space-y-1">
+          <div className="space-y-1 pr-4">
             <CardTitle className="font-headline">{character.name}</CardTitle>
             <CardDescription className="line-clamp-2">
                 {character.description}
@@ -418,19 +449,15 @@ export default function CharacterLibraryPage() {
     });
   };
 
-  const handleUpdate = (id: string, data: CharacterFormData) => {
+  const handleUpdate = (id: string, data: CharacterFormData, newPromptData?: { prompt: string, appearanceDescription: string, name: string }) => {
     setCharacters(
       characters.map(c => 
         c.id === id 
-          ? { ...c, ...data, name: c.name, prompt: c.prompt, appearanceDescription: c.appearanceDescription } 
+          ? { ...c, ...data, ...(newPromptData && { ...newPromptData }) }
           : c
       )
     );
-    const updatedCharacter = characters.find(c => c.id === id);
-    toast({
-      title: 'Character Updated',
-      description: `${updatedCharacter?.name} has been successfully updated. Note that the prompt itself has not been regenerated.`,
-    });
+    // Toast is handled in the CharacterCard component after successful regeneration
   };
 
 

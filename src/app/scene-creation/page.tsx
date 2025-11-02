@@ -66,6 +66,7 @@ export default function SceneCreationPage() {
     if (!character) {
         return undefined;
     }
+    // Correctly use the detailed appearance and prompt for consistency.
     return `Appearance: ${character.appearanceDescription}\nPrompt Details: ${character.prompt}`;
   }, [characters]);
 
@@ -155,8 +156,13 @@ export default function SceneCreationPage() {
   // Watch for changes in form fields to trigger regeneration
   useEffect(() => {
     const subscription = form.watch((value, { name, type }) => {
-      if (generatedData && name !== 'sceneDescription' && type === 'change') {
+      // Regenerate only if a prompt has been generated and the change is not to the description itself.
+      if (generatedData && name !== 'sceneDescription' && name !== 'characterId' && type === 'change') {
         handleRegenerate(form.getValues());
+      }
+      // Handle character change separately.
+      if (generatedData && name === 'characterId' && type === 'change') {
+         handleRegenerate(form.getValues());
       }
     });
     return () => subscription.unsubscribe();
@@ -199,7 +205,7 @@ export default function SceneCreationPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Add Character (Optional)</FormLabel>
-                       <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                       <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value} disabled={!!generatedData && !characters.length}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a character" />
@@ -207,9 +213,13 @@ export default function SceneCreationPage() {
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
-                          {characters.map((character) => (
-                            <SelectItem key={character.id} value={character.id}>{character.name}</SelectItem>
-                          ))}
+                          {characters.length > 0 ? (
+                            characters.map((character) => (
+                              <SelectItem key={character.id} value={character.id}>{character.name}</SelectItem>
+                            ))
+                          ) : (
+                            <SelectItem value="no-characters" disabled>No characters in library</SelectItem>
+                          )}
                         </SelectContent>
                       </Select>
                       <FormMessage />
@@ -228,6 +238,7 @@ export default function SceneCreationPage() {
                           onValueChange={field.onChange}
                           defaultValue={field.value}
                           className="flex space-x-4"
+                          disabled={!!generatedData}
                         >
                           <FormItem className="flex items-center space-x-2 space-y-0">
                             <FormControl>
@@ -332,7 +343,7 @@ export default function SceneCreationPage() {
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a camera" />
-                          </SelectTrigger>
+                          </Trigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
@@ -355,7 +366,7 @@ export default function SceneCreationPage() {
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a film type" />
-                          </SelectTrigger>
+                          </Trigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
