@@ -2,53 +2,20 @@
 
 import { useState, useEffect } from 'react';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Character, CharacterFormData, CharacterFormSchema } from '@/lib/types';
+import { Character } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Copy, Trash2, UserPlus, Edit, Save, X, Loader2 } from 'lucide-react';
+import { Copy, Trash2, UserPlus, Film } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Textarea } from '@/components/ui/textarea';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import { photoStyles } from '@/lib/photo-styles';
-import { cameraAngles } from '@/lib/camera-angles';
-import { lightingStyles } from '@/lib/lighting-styles';
-import { cameras } from '@/lib/cameras';
-import { filmTypes } from '@/lib/film-types';
-import { generateCharacterPrompt } from '@/ai/flows/generate-character-prompt';
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
-type CharacterCardProps = {
-  character: Character;
-  onDelete: (id: string) => void;
-  onUpdate: (id: string, data: CharacterFormData, newPromptData?: { prompt: string, appearanceDescription: string, name: string }) => void;
-};
 
-function CharacterCard({ character, onDelete, onUpdate }: CharacterCardProps) {
+function CharacterCard({ character, onDelete }: { character: Character; onDelete: (id: string) => void; }) {
   const { toast } = useToast();
-  const [isEditing, setIsEditing] = useState(false);
-  const [isRegenerating, setIsRegenerating] = useState(false);
-
-  const form = useForm<CharacterFormData>({
-    resolver: zodResolver(CharacterFormSchema),
-    defaultValues: {
-      description: character.description,
-      artStyle: character.artStyle,
-      cameraAngle: character.cameraAngle,
-      lightingStyle: character.lightingStyle,
-      camera: character.camera,
-      filmType: character.filmType,
-      promptType: character.promptType,
-      creationType: character.creationType,
-    },
-  });
 
   const copyToClipboard = (text: string, type: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -57,299 +24,6 @@ function CharacterCard({ character, onDelete, onUpdate }: CharacterCardProps) {
       });
     });
   };
-
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
-
-  const handleCancel = () => {
-    setIsEditing(false);
-    form.reset({
-      description: character.description,
-      artStyle: character.artStyle,
-      cameraAngle: character.cameraAngle,
-      lightingStyle: character.lightingStyle,
-      camera: character.camera,
-      filmType: character.filmType,
-      promptType: character.promptType,
-      creationType: character.creationType,
-    });
-  };
-
-  const handleSave = async (data: CharacterFormData) => {
-    const hasChanges = JSON.stringify(form.formState.defaultValues) !== JSON.stringify(data);
-
-    if (!hasChanges) {
-      setIsEditing(false);
-      return;
-    }
-
-    setIsRegenerating(true);
-    try {
-      const result = await generateCharacterPrompt(data);
-      if (result.prompt && result.name && result.appearanceDescription) {
-        onUpdate(character.id, data, { prompt: result.prompt, appearanceDescription: result.appearanceDescription, name: result.name });
-        toast({
-          title: 'Character Regenerated',
-          description: 'The prompt and details have been updated.',
-        });
-        setIsEditing(false);
-      } else {
-        throw new Error('Failed to regenerate character prompt.');
-      }
-    } catch (error) {
-      console.error('Error regenerating character:', error);
-      toast({
-        variant: 'destructive',
-        title: 'Regeneration Failed',
-        description: 'Could not update the character. Please try again.',
-      });
-    } finally {
-      setIsRegenerating(false);
-    }
-  };
-
-  const creationType = form.watch('creationType');
-
-  if (isEditing) {
-    return (
-      <Card className="flex flex-col">
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(handleSave)}>
-            <CardHeader>
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Character Name (from description)</FormLabel>
-                    <FormControl>
-                      <Input defaultValue={character.name} className="font-headline text-lg" disabled />
-                    </FormControl>
-                  </FormItem>
-                )}
-              />
-            </CardHeader>
-            <CardContent className="flex-grow space-y-4">
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea rows={4} {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="creationType"
-                render={({ field }) => (
-                  <FormItem className="space-y-3">
-                    <FormLabel>Creation Type</FormLabel>
-                    <FormControl>
-                      <RadioGroup
-                        onValueChange={field.onChange}
-                        defaultValue={field.value}
-                        className="flex space-x-4"
-                      >
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="inScene" />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            In Scene
-                          </FormLabel>
-                        </FormItem>
-                        <FormItem className="flex items-center space-x-2 space-y-0">
-                          <FormControl>
-                            <RadioGroupItem value="studio" />
-                          </FormControl>
-                          <FormLabel className="font-normal">
-                            Studio Shot
-                          </FormLabel>
-                        </FormItem>
-                      </RadioGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              {creationType === 'inScene' && (
-                <FormField
-                  control={form.control}
-                  name="promptType"
-                  render={({ field }) => (
-                    <FormItem className="space-y-3">
-                      <FormLabel>Prompt Type</FormLabel>
-                      <FormControl>
-                        <RadioGroup
-                          onValueChange={field.onChange}
-                          defaultValue={field.value}
-                          className="flex space-x-4"
-                        >
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="artistic" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              Artistic
-                            </FormLabel>
-                          </FormItem>
-                          <FormItem className="flex items-center space-x-2 space-y-0">
-                            <FormControl>
-                              <RadioGroupItem value="json" />
-                            </FormControl>
-                            <FormLabel className="font-normal">
-                              JSON
-                            </FormLabel>
-                          </FormItem>
-                        </RadioGroup>
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-              )}
-
-              <FormField
-                control={form.control}
-                name="artStyle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Art Style</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select an art style" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        {photoStyles.map((style) => (
-                          <SelectItem key={style} value={style}>{style}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-
-              <FormField
-                control={form.control}
-                name="cameraAngle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Camera Angle</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a camera angle" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        {cameraAngles.map((angle) => (
-                          <SelectItem key={angle} value={angle}>{angle}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="lightingStyle"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Lighting Style</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a lighting style" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        {lightingStyles.map((style) => (
-                          <SelectItem key={style} value={style}>{style}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="camera"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Camera</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a camera" />
-                        </SelectTrigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        {cameras.map((camera) => (
-                          <SelectItem key={camera} value={camera}>{camera}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="filmType"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Film Type</FormLabel>
-                    <Select onValueChange={field.onChange} defaultValue={field.value}>
-                      <FormControl>
-                        <SelectTrigger>
-                          <SelectValue placeholder="Select a film type" />
-                        </Trigger>
-                      </FormControl>
-                      <SelectContent>
-                        <SelectItem value="none">None</SelectItem>
-                        {filmTypes.map((film) => (
-                          <SelectItem key={film} value={film}>{film}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-            </CardContent>
-            <CardFooter className="flex justify-end items-center gap-2 mt-4">
-              <Button variant="ghost" size="sm" onClick={handleCancel} type="button" disabled={isRegenerating}>
-                <X className="h-4 w-4 mr-1" />
-                Cancel
-              </Button>
-              <Button variant="default" size="sm" type="submit" disabled={isRegenerating}>
-                {isRegenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <Save className="h-4 w-4 mr-1" />
-                Save & Regenerate
-              </Button>
-            </CardFooter>
-          </form>
-        </Form>
-      </Card>
-    );
-  }
 
   return (
     <Card className="flex flex-col">
@@ -361,9 +35,6 @@ function CharacterCard({ character, onDelete, onUpdate }: CharacterCardProps) {
               {character.description}
             </CardDescription>
           </div>
-          <Button variant="ghost" size="icon" onClick={handleEdit} aria-label={`Edit ${character.name}`}>
-            <Edit className="h-4 w-4" />
-          </Button>
         </div>
       </CardHeader>
       <CardContent className="flex-grow">
@@ -400,7 +71,7 @@ function CharacterCard({ character, onDelete, onUpdate }: CharacterCardProps) {
               </div>
             </AccordionContent>
           </AccordionItem>
-          <AccordionItem value="settings">
+           <AccordionItem value="settings">
             <AccordionTrigger>Generation Settings</AccordionTrigger>
             <AccordionContent>
               <div className="grid grid-cols-2 gap-x-4 gap-y-2 text-sm">
@@ -427,9 +98,31 @@ function CharacterCard({ character, onDelete, onUpdate }: CharacterCardProps) {
         <p className="text-xs text-muted-foreground">
           Created {formatDistanceToNow(new Date(character.createdAt), { addSuffix: true })}
         </p>
-        <Button variant="ghost" size="icon" onClick={() => onDelete(character.id)} aria-label={`Delete ${character.name}`}>
-          <Trash2 className="h-4 w-4 text-destructive" />
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button variant="ghost" size="icon" aria-label={`Delete ${character.name}`}>
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete your character
+                "{character.name}" from your library.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={() => onDelete(character.id)}
+                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardFooter>
     </Card>
   );
@@ -455,21 +148,12 @@ export default function CharacterLibraryPage() {
     });
   };
 
-  const handleUpdate = (id: string, data: CharacterFormData, newPromptData?: { prompt: string, appearanceDescription: string, name: string }) => {
-    setCharacters(
-      characters.map(c =>
-        c.id === id
-          ? { ...c, ...data, ...(newPromptData && { ...newPromptData }) }
-          : c
-      )
-    );
-  };
-
-
   if (!isClient) {
     return (
       <div className="container mx-auto p-4 md:p-8">
-        <h1 className="text-3xl font-headline font-bold mb-6">Character Library</h1>
+        <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-headline font-bold">Character Library</h1>
+        </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(3)].map((_, i) => (
             <Card key={i}>
@@ -492,22 +176,25 @@ export default function CharacterLibraryPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-headline font-bold mb-6">Character Library</h1>
+        <div className="flex justify-between items-center mb-6">
+            <h1 className="text-3xl font-headline font-bold">Character Library</h1>
+            <Button asChild>
+                <Link href="/character-creation">
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Create Character
+                </Link>
+            </Button>
+        </div>
       {characters.length === 0 ? (
         <div className="text-center py-20 border-2 border-dashed rounded-lg">
-          <h2 className="text-xl font-semibold">Your library is empty.</h2>
+          <Film className="mx-auto h-12 w-12 text-muted-foreground" />
+          <h2 className="text-xl font-semibold mt-4">Your library is empty.</h2>
           <p className="text-muted-foreground mt-2">Create a new character to get started.</p>
-          <Button asChild className="mt-4">
-            <Link href="/character-creation">
-              <UserPlus className="mr-2 h-4 w-4" />
-              Create Character
-            </Link>
-          </Button>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {characters.map(character => (
-            <CharacterCard key={character.id} character={character} onDelete={handleDelete} onUpdate={handleUpdate} />
+            <CharacterCard key={character.id} character={character} onDelete={handleDelete} />
           ))}
         </div>
       )}
