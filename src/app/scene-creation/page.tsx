@@ -39,7 +39,7 @@ function SceneCreationForm() {
   const [outfits, setOutfits] = useLocalStorage<Outfit[]>('outfits', []);
   const [locations] = useLocalStorage<Location[]>('locations', []);
   const { favoriteSettings, saveFavoriteSettings, resetFavoriteSettings } = useFavoriteSettings();
-  const { triggerVFX, VFXLayer } = useCompletionVFX();
+  const { triggerVFX, isVFXActive } = useCompletionVFX();
   
   const form = useForm<SceneFormData>({
     resolver: zodResolver(SceneFormSchema),
@@ -250,7 +250,21 @@ function SceneCreationForm() {
 
   return (
     <>
-      {VFXLayer}
+      {isVFXActive && (
+        <div
+          style={{
+            position: 'fixed',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: 'rgba(255, 0, 0, 0.2)',
+            zIndex: 9999,
+            pointerEvents: 'none',
+            animation: 'vfx-fade-out 0.3s ease-out forwards',
+          }}
+        />
+      )}
       <div className="container mx-auto p-4 md:p-8">
         <h1 className="text-3xl font-headline font-bold mb-6">{editingScene ? 'Edit Scene' : 'Create New Scene'}</h1>
         <div className="grid md:grid-cols-2 gap-8 items-start">

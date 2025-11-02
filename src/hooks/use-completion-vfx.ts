@@ -34,23 +34,6 @@ export function useCompletionVFX() {
     }, 300);
   }, []);
 
-  const VFXLayer = isVFXActive ? (
-    <div
-      style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(255, 0, 0, 0.2)',
-        zIndex: 9999,
-        pointerEvents: 'none',
-        animation: 'vfx-fade-out 0.3s ease-out forwards',
-      }}
-    />
-  ) : null;
-
-  // Inject CSS animation keyframes
   useEffect(() => {
     const styleSheet = document.createElement("style");
     styleSheet.type = "text/css";
@@ -67,5 +50,5 @@ export function useCompletionVFX() {
   }, []);
 
 
-  return { triggerVFX, VFXLayer };
+  return { triggerVFX, isVFXActive };
 }
