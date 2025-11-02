@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Copy, Loader2, Save } from 'lucide-react';
+import { Copy, Loader2, Save, Wand, RefreshCw } from 'lucide-react';
 import { generateScenePrompt } from '@/ai/flows/generate-scene-prompt';
+import { regenerateScenePrompt } from '@/ai/flows/regenerate-scene-prompt';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -27,6 +28,7 @@ type GeneratedData = {
 export default function SceneCreationPage() {
   const [generatedData, setGeneratedData] = useState<GeneratedData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRegenerating, setIsRegenerating] = useState(false);
   const [lastGeneratedScene, setLastGeneratedScene] = useState<SceneFormData | null>(null);
 
   const { toast } = useToast();
@@ -83,6 +85,38 @@ export default function SceneCreationPage() {
     }
   }
 
+  async function handleRegenerate(data: SceneFormData) {
+    if (!lastGeneratedScene?.sceneDescription) return;
+
+    setIsRegenerating(true);
+    try {
+      const result = await regenerateScenePrompt({
+        ...data,
+        sceneDescription: lastGeneratedScene.sceneDescription, // Use original description
+      });
+
+      if (result.prompt) {
+        setGeneratedData({ prompt: result.prompt });
+        setLastGeneratedScene(data); // Update last generated with new params
+        toast({
+          title: 'Prompt Updated',
+          description: 'The prompt has been updated with your new settings.',
+        });
+      } else {
+        throw new Error('Prompt was not regenerated correctly.');
+      }
+    } catch (error) {
+      console.error('Error regenerating scene prompt:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Update Failed',
+        description: 'Could not update the prompt. Please try again.',
+      });
+    } finally {
+      setIsRegenerating(false);
+    }
+  }
+
   function saveScene() {
     if (!generatedData || !lastGeneratedScene) return;
 
@@ -99,6 +133,16 @@ export default function SceneCreationPage() {
       description: `The scene has been added to your library.`,
     });
   }
+
+  // Watch for changes in form fields to trigger regeneration
+  useEffect(() => {
+    const subscription = form.watch((value, { name, type }) => {
+      if (generatedData && name !== 'sceneDescription' && type === 'change') {
+        handleRegenerate(form.getValues());
+      }
+    });
+    return () => subscription.unsubscribe();
+  }, [form, generatedData, handleRegenerate]);
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -122,7 +166,8 @@ export default function SceneCreationPage() {
                         <Textarea 
                           rows={8}
                           placeholder="e.g., A quiet, rain-slicked street in Kyoto at dusk. Neon signs reflect in the puddles. A lone figure walks under an umbrella." 
-                          {...field} 
+                          {...field}
+                          disabled={!!generatedData}
                         />
                       </FormControl>
                       <FormMessage />
@@ -171,7 +216,7 @@ export default function SceneCreationPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Art Style</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select an art style" />
@@ -195,7 +240,7 @@ export default function SceneCreationPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Camera Angle</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a camera angle" />
@@ -218,7 +263,7 @@ export default function SceneCreationPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Lighting Style</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a lighting style" />
@@ -241,7 +286,7 @@ export default function SceneCreationPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Camera</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a camera" />
@@ -264,7 +309,7 @@ export default function SceneCreationPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Film Type</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a film type" />
@@ -281,10 +326,12 @@ export default function SceneCreationPage() {
                     </FormItem>
                   )}
                 />
-                <Button type="submit" disabled={isLoading} className="w-full">
-                  {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Generate Prompt
-                </Button>
+                {!generatedData && (
+                  <Button type="submit" disabled={isLoading} className="w-full">
+                    {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand className="mr-2 h-4 w-4" />}
+                    Generate Prompt
+                  </Button>
+                )}
               </form>
             </Form>
           </CardContent>
@@ -297,10 +344,13 @@ export default function SceneCreationPage() {
                 <CardDescription>Your AI-generated prompt will appear here.</CardDescription>
             </div>
             {generatedData && (
-              <Button variant="ghost" size="icon" onClick={() => copyToClipboard(generatedData.prompt)}>
-                <Copy className="h-4 w-4" />
-                <span className="sr-only">Copy Prompt</span>
-              </Button>
+              <div className="flex items-center gap-2">
+                {isRegenerating && <Loader2 className="h-4 w-4 animate-spin" />}
+                <Button variant="ghost" size="icon" onClick={() => copyToClipboard(generatedData.prompt)}>
+                  <Copy className="h-4 w-4" />
+                  <span className="sr-only">Copy Prompt</span>
+                </Button>
+              </div>
             )}
           </CardHeader>
           <CardContent className="min-h-[300px]">
@@ -317,7 +367,7 @@ export default function SceneCreationPage() {
             )}
           </CardContent>
           <CardFooter>
-            <Button onClick={saveScene} disabled={!generatedData || isLoading} className="w-full">
+            <Button onClick={saveScene} disabled={!generatedData || isLoading || isRegenerating} className="w-full">
               <Save className="mr-2 h-4 w-4" />
               Save to Library
             </Button>
