@@ -245,7 +245,7 @@ export default function CharacterCreationPage() {
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a camera angle" />
-                          </Trigger>
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                            <SelectItem value="none">None</SelectItem>
@@ -314,7 +314,7 @@ export default function CharacterCreationPage() {
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a film type" />
-                          </Trigger>
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>

@@ -33,11 +33,11 @@ export default function SceneCreationPage() {
     resolver: zodResolver(SceneFormSchema),
     defaultValues: {
       sceneDescription: '',
-      artStyle: '',
-      cameraAngle: '',
-      lightingStyle: '',
-      camera: '',
-      filmType: '',
+      artStyle: 'none',
+      cameraAngle: 'none',
+      lightingStyle: 'none',
+      camera: 'none',
+      filmType: 'none',
       promptType: 'artistic',
     },
   });
@@ -348,5 +348,3 @@ ${selectedCharacter.appearanceDescription}
     </div>
   );
 }
-
-    
