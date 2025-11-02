@@ -216,7 +216,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a camera angle" />
-                          </Trigger>
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
@@ -239,7 +239,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a lighting style" />
-                          </Trigger>
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
@@ -482,5 +482,3 @@ export default function CharacterLibraryPage() {
     </div>
   );
 }
-
-    
