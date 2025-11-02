@@ -25,8 +25,13 @@ import { cameras } from '@/lib/cameras';
 import { filmTypes } from '@/lib/film-types';
 import { generateCharacterPrompt } from '@/ai/flows/generate-character-prompt';
 
+type CharacterCardProps = { 
+  character: Character;
+  onDelete: (id: string) => void;
+  onUpdate: (id: string, data: CharacterFormData, newPromptData?: { prompt: string, appearanceDescription: string, name: string }) => void;
+};
 
-function CharacterCard({ character, onDelete, onUpdate }: { character: Character, onDelete: (id: string) => void, onUpdate: (id: string, data: CharacterFormData, newPromptData?: { prompt: string, appearanceDescription: string, name: string }) => void }) {
+const CharacterCard = ({ character, onDelete, onUpdate }: CharacterCardProps) => {
   const { toast } = useToast();
   const [isEditing, setIsEditing] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
@@ -429,7 +434,8 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
       </CardFooter>
     </Card>
   );
-}
+};
+
 
 export default function CharacterLibraryPage() {
   const [characters, setCharacters] = useLocalStorage<Character[]>('characters', []);
