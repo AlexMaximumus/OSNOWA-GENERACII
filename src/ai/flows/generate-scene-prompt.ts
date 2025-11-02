@@ -28,7 +28,7 @@ const GenerateScenePromptInputSchema = z.object({
   sceneDescription: z
     .string()
     .describe('Detailed description of the scene including environment, time of day, and mood.'),
-  characterInfo: z.string().optional().describe("A string containing the full appearance description and prompt for a character to be included in the scene."),
+  characterInfo: z.string().optional().describe("A string containing the full, consistent, and detailed visual appearance description and prompt for a character. This MUST NOT contain a name."),
   artStyle: z
     .string()
     .optional()
@@ -66,7 +66,7 @@ const generateScenePromptFlow = ai.defineFlow(
     
     let basePrompt = `You are an expert prompt engineer specializing in creating detailed and optimized prompts for generating scene images based on user inputs. The final prompt must be at least 3000 characters long.
 
-If a character description is provided, you MUST seamlessly integrate it into the main scene description. The character should be the central focus of the scene.
+If a character description ('characterInfo') is provided, you MUST seamlessly integrate it into the main scene description. This 'characterInfo' contains a pre-made, detailed visual description and should be used as-is to ensure consistency. The character should be the central focus of the scene. Do NOT use a character name, only the visual description provided.
 
 If the description includes a base location prompt and additional details, you must synthesize them. Use the base location prompt as the foundation and expertly weave the additional scene details into it to create a single, cohesive, and extremely detailed final prompt.
 
@@ -84,7 +84,7 @@ ${jsonPromptInstructions}`;
     }
 
     const fullSceneDescription = input.characterInfo 
-      ? `Character to include in scene: ${input.characterInfo}\n\nScene Description: ${input.sceneDescription}`
+      ? `Visual Character Description to include in scene: ${input.characterInfo}\n\nScene Description: ${input.sceneDescription}`
       : `Scene Description: ${input.sceneDescription}`;
 
     const finalPrompt = `${basePrompt}
@@ -108,5 +108,3 @@ ${input.filmType && input.filmType !== 'none' ? `Film Type: ${input.filmType}` :
     return output!;
   }
 );
-
-    

@@ -37,9 +37,9 @@ const GenerateCharacterPromptInputSchema = z.object({
 export type GenerateCharacterPromptInput = z.infer<typeof GenerateCharacterPromptInputSchema>;
 
 const GenerateCharacterPromptOutputSchema = z.object({
-  name: z.string().describe('The name of the character, extracted from the description.'),
-  appearanceDescription: z.string().describe('A detailed physical description of the character from head to toe.'),
-  prompt: z.string().describe('The generated prompt for character creation.'),
+  name: z.string().describe("The name of the character, extracted from the description. This name is for display ONLY and MUST NOT be used in the prompt."),
+  appearanceDescription: z.string().describe('A detailed and unambiguous physical description of the character from head to toe. All details must be explicitly stated.'),
+  prompt: z.string().describe('The generated prompt for character creation. This prompt MUST NOT contain the character\'s name.'),
 });
 export type GenerateCharacterPromptOutput = z.infer<typeof GenerateCharacterPromptOutputSchema>;
 
@@ -57,13 +57,11 @@ const generateCharacterPromptFlow = ai.defineFlow(
     
     let basePrompt = `You are a prompt engineer specializing in creating detailed character design prompts.
 
-Analyze the following character description. Extract the character's name and generate:
-1. A detailed prompt for creating an image of this character. The prompt must be at least 3000 characters long.
-2. A separate, extremely detailed and unambiguous physical description of the character from head to toe. This description must be exhaustive, covering every aspect of their appearance including face shape, eye color, hair style and texture, skin details, body type, posture, and any unique features like scars or tattoos. All details must be explicitly stated.
+Analyze the following character description. Extract the character's name for the 'name' field and generate:
+1. An extremely detailed and unambiguous physical description of the character from head to toe for the 'appearanceDescription' field. This must be exhaustive, covering every aspect of their appearance including face shape, eye color, hair style and texture, skin details, body type, posture, and any unique features like scars or tattoos. All details must be explicitly stated so the description can be reused consistently.
+2. A detailed prompt for generating an image of this character for the 'prompt' field. This prompt must be at least 3000 characters long.
 
-IMPORTANT RULE: Do NOT include the character's name in the generated image prompt itself. The prompt should only contain visual descriptions.
-
-If a name is not explicitly provided, invent one for the 'name' output field, but do not use it in the image prompt.
+CRITICAL RULE: The character's name MUST NOT be included in the generated image 'prompt' or the 'appearanceDescription'. The name is only for the UI. The prompt should only contain visual descriptions. If a name is not explicitly provided in the user's description, invent one for the 'name' output field, but do not use it anywhere else.
 `;
 
     if (input.creationType === 'studio') {
@@ -102,5 +100,3 @@ ${input.filmType && input.filmType !== 'none' ? `Film Type: ${input.filmType}` :
     return output!;
   }
 );
-
-    

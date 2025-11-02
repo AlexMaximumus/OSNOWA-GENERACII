@@ -105,13 +105,15 @@ function SceneCreationForm() {
     
     const outfit = outfits.find(o => o.id === data.outfitId);
 
-    let fullDescription = `Appearance: ${character.appearanceDescription}`;
-
+    // Combine the base character prompt with the outfit description.
+    // The name is NOT included, only the visual details.
+    let characterVisuals = character.prompt;
+    
     if (outfit) {
-        fullDescription += `\n\nOutfit: ${outfit.prompt}`;
+        characterVisuals += `\n\nOutfit: ${outfit.prompt}`;
     }
 
-    return fullDescription;
+    return characterVisuals;
   };
 
   const getLocationInfo = (data: SceneFormData): string => {
@@ -533,7 +535,7 @@ function SceneCreationForm() {
                               <FormControl>
                                   <SelectTrigger>
                                   <SelectValue placeholder="Select a camera" />
-                                  </SelectTrigger>
+                                  </TSelectTrigger>
                               </FormControl>
                               <SelectContent>
                                   <SelectItem value="none">None</SelectItem>
