@@ -59,7 +59,7 @@ const generateCharacterPromptFlow = ai.defineFlow(
 
 Analyze the following character description. Extract the character's name and generate:
 1. A detailed prompt for creating an image of this character. The prompt must be at least 3000 characters long.
-2. A separate, detailed physical description of the character from head to toe.
+2. A separate, extremely detailed and unambiguous physical description of the character from head to toe. This description must be exhaustive, covering every aspect of their appearance including face shape, eye color, hair style and texture, skin details, body type, posture, and any unique features like scars or tattoos. All details must be explicitly stated.
 
 IMPORTANT RULE: Do NOT include the character's name in the generated image prompt itself. The prompt should only contain visual descriptions.
 
