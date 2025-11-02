@@ -1,9 +1,9 @@
 'use server';
 
 /**
- * @fileOverview Generates a detailed outfit prompt for a character.
+ * @fileOverview Generates a detailed outfit description.
  *
- * - generateOutfitPrompt - A function that handles the outfit prompt generation.
+ * - generateOutfitPrompt - A function that handles the outfit description generation.
  * - GenerateOutfitPromptInput - The input type for the generateOutfitPrompt function.
  * - GenerateOutfitPromptOutput - The return type for the generateOutfitPrompt function.
  */
@@ -12,15 +12,13 @@ import { ai } from '@/ai/genkit';
 import { z } from 'genkit';
 
 const GenerateOutfitPromptInputSchema = z.object({
-  characterAppearance: z.string().describe('The detailed physical appearance of the character.'),
   outfitDescription: z.string().describe('A description of the desired outfit style.'),
-  artStyle: z.string().optional().describe('The art style for the image.'),
 });
 export type GenerateOutfitPromptInput = z.infer<typeof GenerateOutfitPromptInputSchema>;
 
 const GenerateOutfitPromptOutputSchema = z.object({
   name: z.string().describe('A short, descriptive name for the outfit (e.g., "Casual Summer Dress", "Cyberpunk Rebel Gear").'),
-  prompt: z.string().describe('The generated, highly detailed prompt for the character wearing the specified outfit. This prompt should focus on the clothing items, their materials, fit, and how they interact with the character\'s body and posture. It must be at least 2000 characters long.'),
+  description: z.string().describe('The generated, highly detailed description of the outfit. This description should focus ONLY on the clothing items, their materials, fit, cut, color, layers, accessories, and footwear. It must be at least 300 characters long.'),
 });
 export type GenerateOutfitPromptOutput = z.infer<typeof GenerateOutfitPromptOutputSchema>;
 
@@ -39,24 +37,20 @@ const generateOutfitPromptFlow = ai.defineFlow(
       name: 'generateOutfitPrompt',
       input: { schema: GenerateOutfitPromptInputSchema },
       output: { schema: GenerateOutfitPromptOutputSchema },
-      prompt: `You are a master fashion designer and prompt engineer. Your task is to design an outfit based on a general description and create a highly detailed, verbose, and evocative prompt for an image generation model.
+      prompt: `You are a master fashion designer. Your task is to design an outfit based on a general description and create a highly detailed, verbose, and evocative text description of that outfit.
 
-The prompt must describe a character wearing this outfit. It should be incredibly specific about every single item of clothing, including materials, texture, fit, cut, color, layers, accessories, and footwear. Describe how the clothing hangs on the character's body, how it wrinkles, and how it interacts with their posture.
+The output must be ONLY a description of the clothing. Do NOT generate a prompt for an image model. Do NOT describe a character wearing the outfit.
+
+Your description must be incredibly specific about every single item of clothing, including materials, texture, fit, cut, color, layers, accessories, and footwear.
 
 You must also generate a short, descriptive name for this outfit.
 
-The final image prompt must be at least 2000 characters long.
-
-Character's Appearance:
-${input.characterAppearance}
+The final description must be at least 300 characters long.
 
 Desired Outfit Style:
 ${input.outfitDescription}
 
-Art Style:
-${input.artStyle || 'Photorealistic, cinematic lighting'}
-
-Generate the outfit name and the detailed prompt.
+Generate the outfit name and the detailed text description of the clothes.
 `,
     });
 

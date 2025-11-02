@@ -51,16 +51,16 @@ export type Scene = SceneFormData & {
 
 // For Outfit Generation
 export const OutfitFormSchema = z.object({
-    characterId: z.string().min(1, "A character must be selected."),
     description: z.string().min(1, "Outfit description is required."),
-    artStyle: z.string().optional(),
 });
 export type OutfitFormData = z.infer<typeof OutfitFormSchema>;
 
-export type Outfit = OutfitFormData & {
+export type Outfit = {
     id: string;
+    characterId: string; // Character it's assigned to. Can be empty if not assigned.
     name: string;
-    prompt: string;
+    description: string; // The original user description
+    prompt: string; // The detailed AI-generated description
     createdAt: string;
 };
     

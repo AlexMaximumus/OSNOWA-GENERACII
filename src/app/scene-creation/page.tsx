@@ -50,8 +50,8 @@ function SceneCreationForm() {
     },
   });
   
-  const selectedCharacterId = form.watch('characterId');
-  const availableOutfits = outfits.filter(o => o.characterId === selectedCharacterId);
+  // Unlike before, we don't filter outfits here. All outfits are available.
+  const availableOutfits = outfits;
 
   useEffect(() => {
     const sceneId = searchParams.get('id');
@@ -90,13 +90,15 @@ function SceneCreationForm() {
     
     const outfit = outfits.find(o => o.id === data.outfitId);
 
-    // If an outfit is selected, its prompt is self-contained (includes character appearance).
+    // Start with the character's base appearance description.
+    let fullDescription = `Appearance: ${character.appearanceDescription}`;
+
+    // If an outfit is selected, append its detailed description.
     if (outfit) {
-        return outfit.prompt;
+        fullDescription += `\n\nOutfit: ${outfit.prompt}`; // outfit.prompt now contains the detailed description
     }
 
-    // Otherwise, use the character's base prompt.
-    return `Appearance: ${character.appearanceDescription}\n\nPrompt Context: ${character.prompt}`;
+    return fullDescription;
   };
 
   async function handleGeneration(data: SceneFormData, isRegen: boolean) {
@@ -154,15 +156,18 @@ function SceneCreationForm() {
   function saveScene() {
     if (!generatedPrompt || !lastGeneratedData) return;
     
-    // Get current form state to save selections
     const currentFormData = form.getValues();
+
+    const sceneDataToSave = {
+        ...lastGeneratedData,
+        ...currentFormData, // This includes characterId and now the assigned outfitId
+        prompt: generatedPrompt,
+    };
 
     if (editingScene) {
         const updatedScene: Scene = {
             ...editingScene,
-            ...lastGeneratedData, // Original description
-            ...currentFormData, // Selections like characterId, outfitId etc.
-            prompt: generatedPrompt,
+            ...sceneDataToSave,
         };
         setScenes(scenes.map(s => s.id === editingScene.id ? updatedScene : s));
         toast({
@@ -172,9 +177,7 @@ function SceneCreationForm() {
     } else {
         const newScene: Scene = {
             id: crypto.randomUUID(),
-            ...lastGeneratedData,
-            ...currentFormData,
-            prompt: generatedPrompt,
+            ...sceneDataToSave,
             createdAt: new Date().toISOString(),
         };
         setScenes([newScene, ...scenes]);
@@ -183,10 +186,16 @@ function SceneCreationForm() {
             description: `The scene has been added to your library.`,
         });
     }
+    
+    // Also update the characterId for the selected outfit
+    if (currentFormData.outfitId && currentFormData.outfitId !== 'none' && currentFormData.characterId && currentFormData.characterId !== 'none') {
+        setOutfits(outfits.map(o => o.id === currentFormData.outfitId ? { ...o, characterId: currentFormData.characterId! } : o));
+    }
   }
   
   const currentPromptType = form.watch('promptType');
   const isArtisticPrompt = currentPromptType === 'artistic';
+  const selectedCharacterId = form.watch('characterId');
 
   return (
     <div className="container mx-auto p-4 md:p-8">
@@ -263,7 +272,7 @@ function SceneCreationForm() {
                         <Select onValueChange={field.onChange} value={field.value}>
                             <FormControl>
                             <SelectTrigger disabled={availableOutfits.length === 0}>
-                                <SelectValue placeholder={availableOutfits.length > 0 ? "Select an outfit..." : "No outfits for this character"} />
+                                <SelectValue placeholder={availableOutfits.length > 0 ? "Select an outfit..." : "No outfits in library"} />
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>

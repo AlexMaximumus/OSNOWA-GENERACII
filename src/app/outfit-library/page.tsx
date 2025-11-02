@@ -12,13 +12,13 @@ import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from '@/components/ui/alert-dialog';
 
-function OutfitCard({ outfit, character, onDelete }: { outfit: Outfit; character?: Character; onDelete: (id: string) => void; }) {
+function OutfitCard({ outfit, onDelete }: { outfit: Outfit; onDelete: (id: string) => void; }) {
   const { toast } = useToast();
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       toast({
-        title: 'Copied prompt to clipboard!',
+        title: 'Copied description to clipboard!',
       });
     });
   };
@@ -30,22 +30,17 @@ function OutfitCard({ outfit, character, onDelete }: { outfit: Outfit; character
             <div>
                 <CardTitle className="font-headline">{outfit.name}</CardTitle>
                 <CardDescription className="flex items-center pt-1">
-                    <User className="mr-2 h-4 w-4 text-muted-foreground" />
-                    For {character?.name || 'Unknown Character'}
+                    {outfit.description}
                 </CardDescription>
             </div>
             <Button variant="ghost" size="icon" onClick={() => copyToClipboard(outfit.prompt)}>
                 <Copy className="h-4 w-4" />
-                <span className="sr-only">Copy Prompt</span>
+                <span className="sr-only">Copy Description</span>
             </Button>
         </div>
       </CardHeader>
       <CardContent className="flex-grow">
-        <p className="text-sm text-muted-foreground line-clamp-3">{outfit.description}</p>
-        <div className="text-sm mt-4">
-            <span className="font-medium">Art Style: </span>
-            <span className="text-muted-foreground">{outfit.artStyle || 'Default'}</span>
-        </div>
+        <p className="text-sm text-muted-foreground line-clamp-4">{outfit.prompt}</p>
       </CardContent>
       <CardFooter className="flex justify-between items-center mt-4">
         <p className="text-xs text-muted-foreground">
@@ -83,7 +78,6 @@ function OutfitCard({ outfit, character, onDelete }: { outfit: Outfit; character
 
 export default function OutfitLibraryPage() {
   const [outfits, setOutfits] = useLocalStorage<Outfit[]>('outfits', []);
-  const [characters] = useLocalStorage<Character[]>('characters', []);
   const { toast } = useToast();
   const [isClient, setIsClient] = useState(false);
 
@@ -100,10 +94,6 @@ export default function OutfitLibraryPage() {
       variant: 'destructive',
     });
   };
-
-  const getCharacterForOutfit = (outfit: Outfit) => {
-    return characters.find(c => c.id === outfit.characterId);
-  }
 
   if (!isClient) {
     return (
@@ -151,7 +141,7 @@ export default function OutfitLibraryPage() {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {outfits.map(outfit => (
-            <OutfitCard key={outfit.id} outfit={outfit} character={getCharacterForOutfit(outfit)} onDelete={handleDelete} />
+            <OutfitCard key={outfit.id} outfit={outfit} onDelete={handleDelete} />
           ))}
         </div>
       )}
