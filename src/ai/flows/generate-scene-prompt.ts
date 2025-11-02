@@ -4,7 +4,7 @@
  * @fileOverview Generates an optimized prompt for scene generation based on user inputs.
  *
  * - generateScenePrompt - A function that generates the scene prompt.
- * - GenerateScenePromptInput - The input type for the generateScenePrompt function🗂️
+ * - GenerateScenePromptInput - The input type for the generateScenePrompt function.
  * - GenerateScenePromptOutput - The return type for the generateScenePrompt function.
  */
 
@@ -52,31 +52,37 @@ const generateScenePromptFlow = ai.defineFlow(
     outputSchema: GenerateScenePromptOutputSchema,
   },
   async (input) => {
-    const promptText = `Вы — эксперт-инженер по промптам, специализирующийся на создании подробных и оптимизированных промптов для генерации изображений сцен на основе пользовательских вводов.
+    
+    let basePrompt = `You are an expert prompt engineer specializing in creating detailed and optimized prompts for generating scene images based on user inputs.
 
-Если пользователь предоставил конкретные параметры (стиль, камера и т.д.), используйте их. Если нет, выберите подходящие варианты сами, основываясь на общем описании.
+If the user has provided specific parameters (style, camera, etc.), use them. If not, choose suitable options yourself based on the general description.
+`;
   
-  ${
-    input.promptType === 'artistic'
-      ? `Вы должны сгенерировать художественный промпт. Промпт должен быть очень описательным и включать детали об окружении, персонажах (если есть), объектах, атмосфере и общей композиции, чтобы направить модель ИИ на создание желаемой сцены.
-  ${artisticPromptInstructions}`
-      : `Вы должны сгенерировать JSON промпт. Заполните JSON структуру на основе описания.
-  ${jsonPromptInstructions}`
-  }
+    if (input.promptType === 'artistic') {
+      basePrompt += `
+You must generate an artistic prompt. The prompt should be very descriptive and include details about the environment, characters (if any), objects, atmosphere, and overall composition to guide the AI model in creating the desired scene.
+${artisticPromptInstructions}`;
+    } else {
+      basePrompt += `
+You must generate a JSON prompt. Fill in the JSON structure based on the description.
+${jsonPromptInstructions}`;
+    }
 
-  Описание сцены: ${input.sceneDescription}
-  ${input.artStyle ? `Художественный стиль: ${input.artStyle}` : ''}
-  ${input.cameraAngle ? `Ракурс камеры: ${input.cameraAngle}` : ''}
-  ${input.lightingStyle ? `Стиль освещения: ${input.lightingStyle}` : ''}
-  ${input.camera ? `Камера: ${input.camera}` : ''}
-  ${input.filmType ? `Тип пленки: ${input.filmType}` : ''}
-  `;
+    const finalPrompt = `${basePrompt}
+
+Scene Description: ${input.sceneDescription}
+${input.artStyle ? `Art Style: ${input.artStyle}` : ''}
+${input.cameraAngle ? `Camera Angle: ${input.cameraAngle}` : ''}
+${input.lightingStyle ? `Lighting Style: ${input.lightingStyle}` : ''}
+${input.camera ? `Camera: ${input.camera}` : ''}
+${input.filmType ? `Film Type: ${input.filmType}` : ''}
+`;
 
     const prompt = ai.definePrompt({
         name: 'generateScenePrompt',
         input: {schema: GenerateScenePromptInputSchema},
         output: {schema: GenerateScenePromptOutputSchema},
-        prompt: promptText,
+        prompt: finalPrompt,
     });
     
     const {output} = await prompt(input);

@@ -14,13 +14,13 @@ import {
 import { Separator } from './ui/separator';
 
 const mainLinks = [
-  { href: '/character-creation', label: 'Создать персонажа', icon: UserPlus },
-  { href: '/scene-creation', label: 'Создать сцену', icon: MountainSnow },
+  { href: '/character-creation', label: 'Create Character', icon: UserPlus },
+  { href: '/scene-creation', label: 'Create Scene', icon: MountainSnow },
 ];
 
 const libraryLinks = [
-  { href: '/character-library', label: 'Библиотека персонажей', icon: Users },
-  { href: '/scene-library', label: 'Библиотека сцен', icon: Film },
+  { href: '/character-library', label: 'Character Library', icon: Users },
+  { href: '/scene-library', label: 'Scene Library', icon: Film },
 ];
 
 const SidebarLogo = () => (
@@ -31,7 +31,7 @@ const SidebarLogo = () => (
           <path d="M12.9286 9.07141H15.6428" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
           <path d="M12.9286 13.6428H15.6428" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round"/>
       </svg>
-      <h1 className="font-headline text-lg font-bold text-foreground">Кузница Историй</h1>
+      <h1 className="font-headline text-lg font-bold text-foreground">Story Forge</h1>
   </div>
 );
 

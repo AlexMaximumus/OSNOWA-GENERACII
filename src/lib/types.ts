@@ -5,7 +5,7 @@ export type PromptType = z.infer<typeof PromptTypeSchema>;
 
 // For form validation
 export const CharacterFormSchema = z.object({
-  description: z.string().min(1, "Описание обязательно."),
+  description: z.string().min(1, "Description is required."),
   artStyle: z.string().optional(),
   cameraAngle: z.string().optional(),
   lightingStyle: z.string().optional(),
@@ -25,7 +25,7 @@ export type Character = CharacterFormData & {
 
 // For form validation
 export const SceneFormSchema = z.object({
-  sceneDescription: z.string().min(1, "Описание сцены обязательно."),
+  sceneDescription: z.string().min(1, "Scene description is required."),
   artStyle: z.string().optional(),
   cameraAngle: z.string().optional(),
   lightingStyle: z.string().optional(),

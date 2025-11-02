@@ -52,34 +52,39 @@ const generateCharacterPromptFlow = ai.defineFlow(
   },
   async (input) => {
     
-    const promptText = `Вы — инженер по промптам, специализирующийся на создании подробных промптов для дизайна персонажей.
+    let basePrompt = `You are a prompt engineer specializing in creating detailed character design prompts.
 
-Проанализируйте следующее описание персонажа. Извлеките из него имя персонажа и сгенерируйте подробный промпт для создания изображения этого персонажа.
-Если имя не указано явно, придумайте его.
+Analyze the following character description. Extract the character's name and generate a detailed prompt for creating an image of this character.
+If a name is not explicitly provided, invent one.
 
-Если пользователь предоставил конкретные параметры (стиль, камера и т.д.), используйте их. Если нет, выберите подходящие варианты сами, основываясь на общем описании.
+If the user has provided specific parameters (style, camera, etc.), use them. If not, choose suitable options yourself based on the general description.
+`;
 
-${
-  input.promptType === 'artistic'
-    ? `Вы должны сгенерировать художественный промпт. Промпт должен включать детали о внешности, одежде и окружении персонажа, соответствующие его образу.
-${artisticPromptInstructions}`
-    : `Вы должны сгенерировать JSON промпт. Заполните JSON структуру на основе описания.
-${jsonPromptInstructions}`
-}
+    if (input.promptType === 'artistic') {
+      basePrompt += `
+You must generate an artistic prompt. The prompt should include details about the character's appearance, clothing, and environment that match their persona.
+${artisticPromptInstructions}`;
+    } else {
+      basePrompt += `
+You must generate a JSON prompt. Fill in the JSON structure based on the description.
+${jsonPromptInstructions}`;
+    }
+
+    const finalPrompt = `${basePrompt}
   
-Описание персонажа: ${input.description}
-${input.artStyle ? `Художественный стиль: ${input.artStyle}` : ''}
-${input.cameraAngle ? `Ракурс камеры: ${input.cameraAngle}` : ''}
-${input.lightingStyle ? `Стиль освещения: ${input.lightingStyle}` : ''}
-${input.camera ? `Камера: ${input.camera}` : ''}
-${input.filmType ? `Тип пленки: ${input.filmType}` : ''}
+Character Description: ${input.description}
+${input.artStyle ? `Art Style: ${input.artStyle}` : ''}
+${input.cameraAngle ? `Camera Angle: ${input.cameraAngle}` : ''}
+${input.lightingStyle ? `Lighting Style: ${input.lightingStyle}` : ''}
+${input.camera ? `Camera: ${input.camera}` : ''}
+${input.filmType ? `Film Type: ${input.filmType}` : ''}
 `;
 
     const prompt = ai.definePrompt({
         name: 'generateCharacterPromptPrompt',
         input: {schema: GenerateCharacterPromptInputSchema},
         output: {schema: GenerateCharacterPromptOutputSchema},
-        prompt: promptText
+        prompt: finalPrompt
     });
     const {output} = await prompt(input);
     return output!;

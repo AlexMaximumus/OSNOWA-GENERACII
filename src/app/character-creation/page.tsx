@@ -54,18 +54,18 @@ export default function CharacterCreationPage() {
         setCharacterName(result.name);
         setLastGeneratedCharacter(data);
         toast({
-          title: 'Промпт создан',
-          description: `Ваш промпт для персонажа "${result.name}" был успешно создан.`,
+          title: 'Prompt Generated',
+          description: `Your prompt for "${result.name}" has been successfully created.`,
         });
       } else {
-        throw new Error('Промпт не был сгенерирован.');
+        throw new Error('Prompt was not generated.');
       }
     } catch (error) {
-      console.error('Ошибка при генерации промпта персонажа:', error);
+      console.error('Error generating character prompt:', error);
       toast({
         variant: 'destructive',
-        title: 'Ошибка генерации',
-        description: 'Не удалось сгенерировать промпт. Пожалуйста, попробуйте еще раз.',
+        title: 'Generation Failed',
+        description: 'Could not generate the prompt. Please try again.',
       });
     } finally {
       setIsLoading(false);
@@ -85,19 +85,19 @@ export default function CharacterCreationPage() {
 
     setCharacters([newCharacter, ...characters]);
     toast({
-      title: 'Персонаж сохранен',
-      description: `${characterName} был добавлен в вашу библиотеку.`,
+      title: 'Character Saved',
+      description: `${characterName} has been added to your library.`,
     });
   }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-headline font-bold mb-6">Создать нового персонажа</h1>
+      <h1 className="text-3xl font-headline font-bold mb-6">Create New Character</h1>
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <Card>
           <CardHeader>
-            <CardTitle>Детали персонажа</CardTitle>
-            <CardDescription>Опишите вашего персонажа и выберите стили.</CardDescription>
+            <CardTitle>Character Details</CardTitle>
+            <CardDescription>Describe your character and select your styles.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -107,7 +107,7 @@ export default function CharacterCreationPage() {
                   name="promptType"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
-                      <FormLabel>Тип промпта</FormLabel>
+                      <FormLabel>Prompt Type</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
@@ -119,7 +119,7 @@ export default function CharacterCreationPage() {
                               <RadioGroupItem value="artistic" />
                             </FormControl>
                             <FormLabel className="font-normal">
-                              Художественный
+                              Artistic
                             </FormLabel>
                           </FormItem>
                           <FormItem className="flex items-center space-x-2 space-y-0">
@@ -141,11 +141,11 @@ export default function CharacterCreationPage() {
                   name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Описание персонажа</FormLabel>
+                      <FormLabel>Character Description</FormLabel>
                       <FormControl>
                         <Textarea 
                           rows={8}
-                          placeholder="Например: Аларик, мрачный эльфийский следопыт с седыми волосами и шрамом на глазу. Он одет в потертую кожаную броню и носит лук из тисового дерева. Его цель - отомстить за свою семью." 
+                          placeholder="e.g., Alaric, a grim elven ranger with graying hair and a scar across one eye. He wears worn leather armor and carries a yew bow. His goal is to avenge his family." 
                           {...field} 
                         />
                       </FormControl>
@@ -158,11 +158,11 @@ export default function CharacterCreationPage() {
                   name="artStyle"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Художественный стиль</FormLabel>
+                      <FormLabel>Art Style</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Выберите художественный стиль" />
+                            <SelectValue placeholder="Select an art style" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -180,11 +180,11 @@ export default function CharacterCreationPage() {
                   name="cameraAngle"
                   render={({ field }) => (
                      <FormItem>
-                      <FormLabel>Ракурс камеры</FormLabel>
+                      <FormLabel>Camera Angle</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Выберите ракурс камеры" />
+                            <SelectValue placeholder="Select a camera angle" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -202,11 +202,11 @@ export default function CharacterCreationPage() {
                   name="lightingStyle"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Стиль освещения</FormLabel>
+                      <FormLabel>Lighting Style</FormLabel>
                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Выберите стиль освещения" />
+                            <SelectValue placeholder="Select a lighting style" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -224,11 +224,11 @@ export default function CharacterCreationPage() {
                   name="camera"
                   render={({ field }) => (
                      <FormItem>
-                      <FormLabel>Камера</FormLabel>
+                      <FormLabel>Camera</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Выберите камеру" />
+                            <SelectValue placeholder="Select a camera" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -246,11 +246,11 @@ export default function CharacterCreationPage() {
                   name="filmType"
                   render={({ field }) => (
                      <FormItem>
-                      <FormLabel>Тип пленки</FormLabel>
+                      <FormLabel>Film Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Выберите тип пленки" />
+                            <SelectValue placeholder="Select a film type" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -265,7 +265,7 @@ export default function CharacterCreationPage() {
                 />
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Сгенерировать промпт
+                  Generate Prompt
                 </Button>
               </form>
             </Form>
@@ -274,8 +274,8 @@ export default function CharacterCreationPage() {
 
         <Card className="sticky top-8">
           <CardHeader>
-            <CardTitle>Сгенерированный промпт</CardTitle>
-            <CardDescription>Ваш AI-сгенерированный промпт появится здесь.</CardDescription>
+            <CardTitle>Generated Prompt</CardTitle>
+            <CardDescription>Your AI-generated prompt will appear here.</CardDescription>
           </CardHeader>
           <CardContent className="min-h-[300px]">
             {isLoading ? (
@@ -286,14 +286,14 @@ export default function CharacterCreationPage() {
               <Textarea readOnly value={generatedPrompt} className="h-full min-h-[300px] text-base" />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
-                Ваш промпт ждет, чтобы его создали...
+                Your prompt is waiting to be created...
               </div>
             )}
           </CardContent>
           <CardFooter>
             <Button onClick={saveCharacter} disabled={!generatedPrompt || isLoading} className="w-full">
               <Save className="mr-2 h-4 w-4" />
-              Сохранить в библиотеку
+              Save to Library
             </Button>
           </CardFooter>
         </Card>

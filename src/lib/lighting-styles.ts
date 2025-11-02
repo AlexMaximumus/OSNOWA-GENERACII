@@ -1,13 +1,13 @@
 
 export const lightingStyles: string[] = [
-  'Драматическое',
-  'Мягкое',
-  'Золотой час',
-  'Синий час',
-  'Контрастное',
-  'Неоновое освещение',
-  'Студийное освещение',
-  'Естественный свет',
-  'Рембрандтовский свет',
-  'Контурный свет',
+  'Dramatic',
+  'Soft',
+  'Golden Hour',
+  'Blue Hour',
+  'High Contrast',
+  'Neon Lighting',
+  'Studio Lighting',
+  'Natural Light',
+  'Rembrandt Lighting',
+  'Rim Lighting',
 ];

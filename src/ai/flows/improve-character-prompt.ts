@@ -38,30 +38,6 @@ export async function improveCharacterPrompt(
   return improveCharacterPromptFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'improveCharacterPromptPrompt',
-  input: {schema: ImproveCharacterPromptInputSchema},
-  output: {schema: ImproveCharacterPromptOutputSchema},
-  prompt: `Вы — AI-инженер по промптам, специализирующийся на дизайне персонажей.
-
-  Проанализируйте следующие успешные и неуспешные промпты для персонажей и дайте предложения по улучшению будущих промптов для персонажей.
-
-  Успешные промпты:
-  {{#each successfulPrompts}}
-  - {{{this}}}
-  {{/each}}
-
-  Неуспешные промпты:
-  {{#each unsuccessfulPrompts}}
-  - {{{this}}}
-  {{/each}}
-
-  Предоставьте конкретные и действенные предложения по улучшению будущих промптов для персонажей на основе закономерностей, которые вы выявите в успешных и неуспешных промптах.
-  Учитывайте такие аспекты, как ясность, детализация и использование конкретных ключевых слов или фраз.
-  Верните предложения в виде нумерованного списка.
-  `,
-});
-
 const improveCharacterPromptFlow = ai.defineFlow(
   {
     name: 'improveCharacterPromptFlow',
@@ -69,6 +45,28 @@ const improveCharacterPromptFlow = ai.defineFlow(
     outputSchema: ImproveCharacterPromptOutputSchema,
   },
   async input => {
+    const promptText = `You are an AI prompt engineer specializing in character design.
+
+Analyze the following successful and unsuccessful character prompts and provide suggestions for improving future character prompts.
+
+Successful Prompts:
+${input.successfulPrompts.map(p => `- ${p}`).join('\n')}
+
+Unsuccessful Prompts:
+${input.unsuccessfulPrompts.map(p => `- ${p}`).join('\n')}
+
+Provide specific and actionable suggestions for improving future character prompts based on the patterns you identify in the successful and unsuccessful prompts.
+Consider aspects like clarity, detail, and the use of specific keywords or phrases.
+Return the suggestions as a numbered list.
+`;
+
+    const prompt = ai.definePrompt({
+        name: 'improveCharacterPromptPrompt',
+        input: {schema: ImproveCharacterPromptInputSchema},
+        output: {schema: ImproveCharacterPromptOutputSchema},
+        prompt: promptText,
+    });
+
     const {output} = await prompt(input);
     return output!;
   }

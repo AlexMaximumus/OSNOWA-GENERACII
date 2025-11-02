@@ -8,7 +8,6 @@ import { generateScenePrompt } from '@/ai/flows/generate-scene-prompt';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/use-local-storage';
@@ -47,24 +46,23 @@ export default function SceneCreationPage() {
     setGeneratedPrompt('');
     setLastGeneratedScene(null);
     try {
-      // @ts-ignore - The AI flow will be updated later to include camera and filmType
       const result = await generateScenePrompt(data);
       if (result.prompt) {
         setGeneratedPrompt(result.prompt);
         setLastGeneratedScene(data);
         toast({
-          title: 'Промпт сгенерирован',
-          description: 'Ваш промпт для сцены был успешно создан.',
+          title: 'Prompt Generated',
+          description: 'Your prompt for the scene has been successfully created.',
         });
       } else {
-        throw new Error('Промпт не был сгенерирован.');
+        throw new Error('Prompt was not generated.');
       }
     } catch (error) {
-      console.error('Ошибка при генерации промпта сцены:', error);
+      console.error('Error generating scene prompt:', error);
       toast({
         variant: 'destructive',
-        title: 'Ошибка генерации',
-        description: 'Не удалось сгенерировать промпт. Пожалуйста, попробуйте еще раз.',
+        title: 'Generation Failed',
+        description: 'Could not generate the prompt. Please try again.',
       });
     } finally {
       setIsLoading(false);
@@ -83,19 +81,19 @@ export default function SceneCreationPage() {
 
     setScenes([newScene, ...scenes]);
     toast({
-      title: 'Сцена сохранена',
-      description: 'Сцена была добавлена в вашу библиотеку.',
+      title: 'Scene Saved',
+      description: 'The scene has been added to your library.',
     });
   }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-headline font-bold mb-6">Создать новую сцену</h1>
+      <h1 className="text-3xl font-headline font-bold mb-6">Create New Scene</h1>
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <Card>
           <CardHeader>
-            <CardTitle>Детали сцены</CardTitle>
-            <CardDescription>Заполните форму, чтобы сгенерировать промпт для сцены.</CardDescription>
+            <CardTitle>Scene Details</CardTitle>
+            <CardDescription>Fill out the form to generate a prompt for your scene.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -105,7 +103,7 @@ export default function SceneCreationPage() {
                   name="promptType"
                   render={({ field }) => (
                     <FormItem className="space-y-3">
-                      <FormLabel>Тип промпта</FormLabel>
+                      <FormLabel>Prompt Type</FormLabel>
                       <FormControl>
                         <RadioGroup
                           onValueChange={field.onChange}
@@ -117,7 +115,7 @@ export default function SceneCreationPage() {
                               <RadioGroupItem value="artistic" />
                             </FormControl>
                             <FormLabel className="font-normal">
-                              Художественный
+                              Artistic
                             </FormLabel>
                           </FormItem>
                           <FormItem className="flex items-center space-x-2 space-y-0">
@@ -139,9 +137,9 @@ export default function SceneCreationPage() {
                   name="sceneDescription"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Описание сцены</FormLabel>
+                      <FormLabel>Scene Description</FormLabel>
                       <FormControl>
-                        <Textarea rows={6} placeholder="например, Оживленный неоновый рынок на далекой планете, мокрые от дождя улицы отражают инопланетное небо..." {...field} />
+                        <Textarea rows={6} placeholder="e.g., A bustling neon market on a distant planet, rain-slicked streets reflecting the alien sky..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -152,11 +150,11 @@ export default function SceneCreationPage() {
                   name="artStyle"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Художественный стиль</FormLabel>
+                      <FormLabel>Art Style</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Выберите художественный стиль" />
+                            <SelectValue placeholder="Select an art style" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -174,11 +172,11 @@ export default function SceneCreationPage() {
                   name="cameraAngle"
                   render={({ field }) => (
                      <FormItem>
-                      <FormLabel>Ракурс камеры</FormLabel>
+                      <FormLabel>Camera Angle</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Выберите ракурс камеры" />
+                            <SelectValue placeholder="Select a camera angle" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -196,11 +194,11 @@ export default function SceneCreationPage() {
                   name="lightingStyle"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Стиль освещения</FormLabel>
+                      <FormLabel>Lighting Style</FormLabel>
                        <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Выберите стиль освещения" />
+                            <SelectValue placeholder="Select a lighting style" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -218,11 +216,11 @@ export default function SceneCreationPage() {
                   name="camera"
                   render={({ field }) => (
                      <FormItem>
-                      <FormLabel>Камера</FormLabel>
+                      <FormLabel>Camera</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Выберите камеру" />
+                            <SelectValue placeholder="Select a camera" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -240,11 +238,11 @@ export default function SceneCreationPage() {
                   name="filmType"
                   render={({ field }) => (
                      <FormItem>
-                      <FormLabel>Тип пленки</FormLabel>
+                      <FormLabel>Film Type</FormLabel>
                       <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
-                            <SelectValue placeholder="Выберите тип пленки" />
+                            <SelectValue placeholder="Select a film type" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
@@ -259,7 +257,7 @@ export default function SceneCreationPage() {
                 />
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Сгенерировать промпт
+                  Generate Prompt
                 </Button>
               </form>
             </Form>
@@ -268,8 +266,8 @@ export default function SceneCreationPage() {
 
         <Card className="sticky top-8">
           <CardHeader>
-            <CardTitle>Сгенерированный промпт</CardTitle>
-            <CardDescription>Ваш AI-сгенерированный промпт появится здесь.</CardDescription>
+            <CardTitle>Generated Prompt</CardTitle>
+            <CardDescription>Your AI-generated prompt will appear here.</CardDescription>
           </CardHeader>
           <CardContent className="min-h-[300px]">
             {isLoading ? (
@@ -280,14 +278,14 @@ export default function SceneCreationPage() {
               <Textarea readOnly value={generatedPrompt} className="h-full min-h-[300px] text-base" />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
-                Ваш промпт ждет, чтобы его создали...
+                Your prompt is waiting to be created...
               </div>
             )}
           </CardContent>
           <CardFooter>
             <Button onClick={saveScene} disabled={!generatedPrompt || isLoading} className="w-full">
               <Save className="mr-2 h-4 w-4" />
-              Сохранить в библиотеку
+              Save to Library
             </Button>
           </CardFooter>
         </Card>

@@ -36,25 +36,6 @@ export async function improveScenePrompt(
   return improveScenePromptFlow(input);
 }
 
-const prompt = ai.definePrompt({
-  name: 'improveScenePromptPrompt',
-  input: {schema: ImproveScenePromptInputSchema},
-  output: {schema: ImproveScenePromptOutputSchema},
-  prompt: `Вы — AI-помощник по улучшению промптов. Проанализируйте следующие успешные и неуспешные промпты для сцен и дайте предложения по улучшению будущих промптов.
-
-Успешные промпты:
-{{#each successfulPrompts}}
-- {{{this}}}
-{{/each}}
-
-Неуспешные промпты:
-{{#each unsuccessfulPrompts}}
-- {{{this}}}
-{{/each}}
-
-Предоставьте конкретные и действенные предложения по улучшению будущих промптов для сцен на основе закономерностей, которые вы заметите в успешных и неуспешных промптах.
-`,
-});
 
 const improveScenePromptFlow = ai.defineFlow(
   {
@@ -63,6 +44,24 @@ const improveScenePromptFlow = ai.defineFlow(
     outputSchema: ImproveScenePromptOutputSchema,
   },
   async input => {
+    const promptText = `You are an AI prompt improvement assistant. Analyze the following successful and unsuccessful scene prompts and provide suggestions for improving future prompts.
+
+Successful Prompts:
+${input.successfulPrompts.map(p => `- ${p}`).join('\n')}
+
+Unsuccessful Prompts:
+${input.unsuccessfulPrompts.map(p => `- ${p}`).join('\n')}
+
+Provide specific and actionable suggestions for improving future scene prompts based on the patterns you observe in the successful and unsuccessful prompts.
+`;
+
+    const prompt = ai.definePrompt({
+        name: 'improveScenePromptPrompt',
+        input: {schema: ImproveScenePromptInputSchema},
+        output: {schema: ImproveScenePromptOutputSchema},
+        prompt: promptText,
+    });
+
     const {output} = await prompt(input);
     return output!;
   }
