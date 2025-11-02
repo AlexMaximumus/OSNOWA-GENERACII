@@ -269,7 +269,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a lighting style" />
-                          </Trigger>
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
@@ -292,7 +292,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a camera" />
-                          </Trigger>
+                          </SelectTrigger>
                         </FormControl>
                         <SelectContent>
                           <SelectItem value="none">None</SelectItem>
@@ -345,6 +345,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
       </Card>
     );
   }
+
 
   return (
     <Card className="flex flex-col">
