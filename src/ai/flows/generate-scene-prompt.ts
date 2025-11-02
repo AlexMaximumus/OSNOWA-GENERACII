@@ -10,6 +10,9 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { PromptTypeSchema } from '@/lib/types';
+import { artisticPromptInstructions } from '@/lib/artistic-prompt-instructions';
+import { jsonPromptInstructions } from '@/lib/json-prompt-instructions';
 
 const GenerateScenePromptInputSchema = z.object({
   sceneDescription: z
@@ -24,6 +27,7 @@ const GenerateScenePromptInputSchema = z.object({
   lightingStyle: z
     .string()
     .describe('Type of lighting for the scene (e.g., soft, dramatic, natural).'),
+  promptType: PromptTypeSchema,
 });
 export type GenerateScenePromptInput = z.infer<typeof GenerateScenePromptInputSchema>;
 
@@ -41,6 +45,13 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateScenePromptInputSchema},
   output: {schema: GenerateScenePromptOutputSchema},
   prompt: `Вы — эксперт-инженер по промптам, специализирующийся на создании подробных и оптимизированных промптов для генерации изображений сцен на основе пользовательских вводов.
+  
+  {{#ifCond promptType "==" "artistic"}}
+  ${artisticPromptInstructions}
+  {{/ifCond}}
+  {{#ifCond promptType "==" "json"}}
+  ${jsonPromptInstructions}
+  {{/ifCond}}
 
   На основе следующих деталей сцены сгенерируйте исчерпывающий промпт, который можно использовать с моделями генерации изображений ИИ, такими как DALL-E, Midjourney или Stable Diffusion, для создания визуально убедительной сцены.
 

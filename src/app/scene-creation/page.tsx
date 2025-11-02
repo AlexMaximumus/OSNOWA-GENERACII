@@ -13,6 +13,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { Scene, SceneFormData, SceneFormSchema } from '@/lib/types';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 
 export default function SceneCreationPage() {
   const [generatedPrompt, setGeneratedPrompt] = useState<string>('');
@@ -29,6 +30,7 @@ export default function SceneCreationPage() {
       artStyle: '',
       cameraAngle: '',
       lightingStyle: '',
+      promptType: 'artistic',
     },
   });
 
@@ -89,6 +91,40 @@ export default function SceneCreationPage() {
           <CardContent>
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                 <FormField
+                  control={form.control}
+                  name="promptType"
+                  render={({ field }) => (
+                    <FormItem className="space-y-3">
+                      <FormLabel>Тип промпта</FormLabel>
+                      <FormControl>
+                        <RadioGroup
+                          onValueChange={field.onChange}
+                          defaultValue={field.value}
+                          className="flex space-x-4"
+                        >
+                          <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="artistic" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              Художественный
+                            </FormLabel>
+                          </FormItem>
+                          <FormItem className="flex items-center space-x-2 space-y-0">
+                            <FormControl>
+                              <RadioGroupItem value="json" />
+                            </FormControl>
+                            <FormLabel className="font-normal">
+                              JSON
+                            </FormLabel>
+                          </FormItem>
+                        </RadioGroup>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <FormField
                   control={form.control}
                   name="sceneDescription"

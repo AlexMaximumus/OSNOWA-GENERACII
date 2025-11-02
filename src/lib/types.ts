@@ -1,5 +1,8 @@
 import { z } from "zod";
 
+export const PromptTypeSchema = z.enum(["artistic", "json"]);
+export type PromptType = z.infer<typeof PromptTypeSchema>;
+
 // For form validation
 export const CharacterFormSchema = z.object({
   name: z.string().min(1, "Имя обязательно."),
@@ -9,6 +12,7 @@ export const CharacterFormSchema = z.object({
   personality: z.string().min(1, "Характер обязателен."),
   appearance: z.string().min(1, "Внешность обязательна."),
   motivations: z.string().min(1, "Мотивация обязательна."),
+  promptType: PromptTypeSchema.default("artistic"),
 });
 export type CharacterFormData = z.infer<typeof CharacterFormSchema>;
 
@@ -25,6 +29,7 @@ export const SceneFormSchema = z.object({
   artStyle: z.string().min(1, "Художественный стиль обязателен."),
   cameraAngle: z.string().min(1, "Ракурс камеры обязателен."),
   lightingStyle: z.string().min(1, "Стиль освещения обязателен."),
+  promptType: PromptTypeSchema.default("artistic"),
 });
 export type SceneFormData = z.infer<typeof SceneFormSchema>;
 

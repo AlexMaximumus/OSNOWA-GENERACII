@@ -10,6 +10,9 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
+import { PromptTypeSchema } from '@/lib/types';
+import { artisticPromptInstructions } from '@/lib/artistic-prompt-instructions';
+import { jsonPromptInstructions } from '@/lib/json-prompt-instructions';
 
 const GenerateCharacterPromptInputSchema = z.object({
   genre: z.string().describe('The genre of the story, e.g., fantasy, sci-fi, historical.'),
@@ -19,6 +22,7 @@ const GenerateCharacterPromptInputSchema = z.object({
   personality: z.string().describe('The personality of the character.'),
   appearance: z.string().describe('The appearance of the character.'),
   motivations: z.string().describe('The motivations of the character.'),
+  promptType: PromptTypeSchema,
 });
 export type GenerateCharacterPromptInput = z.infer<typeof GenerateCharacterPromptInputSchema>;
 
@@ -36,6 +40,13 @@ const prompt = ai.definePrompt({
   input: {schema: GenerateCharacterPromptInputSchema},
   output: {schema: GenerateCharacterPromptOutputSchema},
   prompt: `Вы — инженер по промптам, специализирующийся на создании подробных промптов для дизайна персонажей.
+
+  {{#ifCond promptType "==" "artistic"}}
+  ${artisticPromptInstructions}
+  {{/ifCond}}
+  {{#ifCond promptType "==" "json"}}
+  ${jsonPromptInstructions}
+  {{/ifCond}}
 
   На основе предоставленных данных о персонаже, сгенерируйте промпт, который можно использовать для создания изображения персонажа.
   Промпт должен включать детали о внешности, одежде и окружении персонажа, соответствующие его жанру, профессии и мотивации.
