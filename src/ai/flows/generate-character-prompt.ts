@@ -61,7 +61,9 @@ Analyze the following character description. Extract the character's name and ge
 1. A detailed prompt for creating an image of this character. The prompt must be at least 3000 characters long.
 2. A separate, detailed physical description of the character from head to toe.
 
-If a name is not explicitly provided, invent one.
+IMPORTANT RULE: Do NOT include the character's name in the generated image prompt itself. The prompt should only contain visual descriptions.
+
+If a name is not explicitly provided, invent one for the 'name' output field, but do not use it in the image prompt.
 `;
 
     if (input.creationType === 'studio') {
