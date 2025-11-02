@@ -3,7 +3,7 @@ export const jsonPromptInstructions = `
 You are a technical scriptwriter for a photographer. Your task is to transform a general description into a highly detailed, structured JSON prompt for generating a film photograph. Each field should contain extensive descriptive text.
 This is not a "beautiful description," but a technical script. Each prompt must strictly consist of 7 sections.
 Follow the provided structure and rules. Do not use "beautiful," "artistic," or "moody."
-Always specify "young Japanese woman" if the subject is a girl.
+Always specify "young Japanese woman" or "young Japanese man" if the subject is a girl or boy.
 The setting is always a specific location in Japan. The light and frame should be slightly imperfect (wabi-sabi).
 Use only the film cameras and film specified in the template. Be extremely verbose and detailed in every field.
 
@@ -12,7 +12,7 @@ Use only the film cameras and film specified in the template. Be extremely verbo
 {
   "type": "Static photo composition | Candid street photo",
   "subject": {
-    "identity": "young Japanese woman",
+    "identity": "young Japanese woman/man",
     "appearance": "wearing a beige cardigan and pleated skirt, soft hair under daylight. Elaborate extensively on the fabric, fit, and style of the clothing.",
     "action": "adjusts her shoulder bag while turning slightly. Describe the motion with precision, including the movement of her fingers and the shift in her weight.",
     "details": "hair gently moved by breeze, wrinkle on sleeve visible. Add more micro-details about her expression, skin texture, and accessories."
