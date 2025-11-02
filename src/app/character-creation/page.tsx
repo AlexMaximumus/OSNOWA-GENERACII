@@ -38,7 +38,7 @@ export default function CharacterCreationPage() {
     resolver: zodResolver(CharacterFormSchema),
     defaultValues: {
       description: '',
-      artStyle: '',
+      artStyle: 'Photorealism',
       cameraAngle: '',
       lightingStyle: '',
       camera: '',
@@ -61,14 +61,19 @@ export default function CharacterCreationPage() {
     setGeneratedData(null);
     setLastGeneratedCharacter(null);
     try {
-      const result = await generateCharacterPrompt(data);
+      // If studio, force photorealism for better results
+      const submissionData = data.creationType === 'studio' 
+        ? { ...data, artStyle: 'Photorealism' }
+        : data;
+
+      const result = await generateCharacterPrompt(submissionData);
       if (result.prompt && result.name && result.appearanceDescription) {
         setGeneratedData({
             prompt: result.prompt,
             name: result.name,
             appearanceDescription: result.appearanceDescription
         });
-        setLastGeneratedCharacter(data);
+        setLastGeneratedCharacter(submissionData);
         toast({
           title: 'Prompt Generated',
           description: `Your prompt for "${result.name}" has been successfully created.`,
@@ -156,6 +161,24 @@ export default function CharacterCreationPage() {
                   )}
                 />
 
+                <FormField
+                  control={form.control}
+                  name="description"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Character Description</FormLabel>
+                      <FormControl>
+                        <Textarea 
+                          rows={8}
+                          placeholder="e.g., Alaric, a grim elven ranger with graying hair and a scar across one eye. He wears worn leather armor and carries a yew bow. His goal is to avenge his family." 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 {creationType === 'inScene' && (
                   <FormField
                     control={form.control}
@@ -192,31 +215,14 @@ export default function CharacterCreationPage() {
                     )}
                   />
                 )}
-
-                <FormField
-                  control={form.control}
-                  name="description"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Character Description</FormLabel>
-                      <FormControl>
-                        <Textarea 
-                          rows={8}
-                          placeholder="e.g., Alaric, a grim elven ranger with graying hair and a scar across one eye. He wears worn leather armor and carries a yew bow. His goal is to avenge his family." 
-                          {...field} 
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                
                 <FormField
                   control={form.control}
                   name="artStyle"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Art Style</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select an art style" />

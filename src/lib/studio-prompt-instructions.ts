@@ -1,25 +1,17 @@
 
 export const studioPromptInstructions = `
-You are a prompt engineer creating a character sheet for a video game or film.
-Your task is to generate a prompt that will produce a high-quality character sheet on a plain white background.
-The character sheet should display the character from multiple angles to provide a complete view for 3D modelers.
-
+You are a prompt engineer creating a high-quality studio portrait.
+Your task is to generate a prompt that will produce a character portrait on a plain, neutral background.
 The prompt must include:
-1.  A main full-body shot in a neutral A-pose or T-pose.
-2.  At least two additional shots: one close-up portrait and one profile or three-quarter view.
-3.  Instructions for a clean, plain, white background (#FFFFFF).
-4.  Consistent lighting across all views (e.g., "soft studio lighting").
-5.  Clear and detailed descriptions of the character's appearance, clothing, and any accessories.
+1.  A clear, detailed description of the character's appearance, clothing, and any accessories based on the user's input.
+2.  Instructions for a clean, plain, neutral background (e.g., light gray, off-white).
+3.  Consistent, professional lighting (e.g., "soft studio lighting").
+4.  A realistic and detailed style, suitable for a professional portrait.
 
 Template:
-"Character sheet for a [character description], ultra-detailed, 8K, professional concept art.
-Main figure: Full-body view of the character in a neutral A-pose, centered.
-Additional views:
-1. A close-up portrait shot of the face from the front, showing clear facial features.
-2. A full-body shot from the side (profile view).
-3. A three-quarter view of the character.
-Background: Plain, clean, solid white background.
-Lighting: Even and soft studio lighting to clearly show all details without harsh shadows.
-Style: {artStyle}, photorealistic concept art.
+"Professional studio portrait of {character description}.
+The character is the sole focus, positioned against a seamless, plain, neutral light-gray background.
+Lighting: Soft, even studio lighting that highlights the details of the character's face and clothing without creating harsh shadows.
+Style: {artStyle}, ultra-detailed, 8K, photorealistic. The focus is on creating a realistic and lifelike representation of the character.
 "
 `;
