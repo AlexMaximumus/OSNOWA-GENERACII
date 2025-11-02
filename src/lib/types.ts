@@ -48,4 +48,18 @@ export type Scene = SceneFormData & {
   createdAt: string; // Use ISO string for serialization
 };
 
+// For Outfit Generation
+export const OutfitFormSchema = z.object({
+    characterId: z.string().min(1, "A character must be selected."),
+    description: z.string().min(1, "Outfit description is required."),
+    artStyle: z.string().optional(),
+});
+export type OutfitFormData = z.infer<typeof OutfitFormSchema>;
+
+export type Outfit = OutfitFormData & {
+    id: string;
+    name: string;
+    prompt: string;
+    createdAt: string;
+};
     
