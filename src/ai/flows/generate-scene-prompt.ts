@@ -40,16 +40,16 @@ const prompt = ai.definePrompt({
   name: 'generateScenePrompt',
   input: {schema: GenerateScenePromptInputSchema},
   output: {schema: GenerateScenePromptOutputSchema},
-  prompt: `You are an expert prompt engineer specializing in creating detailed and optimized prompts for generating scene images based on user inputs.
+  prompt: `Вы — эксперт-инженер по промптам, специализирующийся на создании подробных и оптимизированных промптов для генерации изображений сцен на основе пользовательских вводов.
 
-  Based on the following scene details, generate a comprehensive prompt that can be used with AI image generation models like DALL-E, Midjourney, or Stable Diffusion to create a visually compelling scene.
+  На основе следующих деталей сцены сгенерируйте исчерпывающий промпт, который можно использовать с моделями генерации изображений ИИ, такими как DALL-E, Midjourney или Stable Diffusion, для создания визуально убедительной сцены.
 
-  Scene Description: {{{sceneDescription}}}
-  Art Style: {{{artStyle}}}
-  Camera Angle: {{{cameraAngle}}}
-  Lighting Style: {{{lightingStyle}}}
+  Описание сцены: {{{sceneDescription}}}
+  Художественный стиль: {{{artStyle}}}
+  Ракурс камеры: {{{cameraAngle}}}
+  Стиль освещения: {{{lightingStyle}}}
 
-  The generated prompt should be highly descriptive and include details about the environment, characters (if any), objects, atmosphere, and overall composition to guide the AI model in creating the desired scene.
+  Сгенерированный промпт должен быть очень описательным и включать детали об окружении, персонажах (если есть), объектах, атмосфере и общей композиции, чтобы направить модель ИИ на создание желаемой сцены.
   `,
 });
 

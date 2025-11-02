@@ -42,18 +42,18 @@ export default function SceneCreationPage() {
         setGeneratedPrompt(result.prompt);
         setLastGeneratedScene(data);
         toast({
-          title: 'Prompt Generated',
-          description: 'Your scene prompt has been successfully created.',
+          title: 'Промпт сгенерирован',
+          description: 'Ваш промпт для сцены был успешно создан.',
         });
       } else {
-        throw new Error('No prompt was generated.');
+        throw new Error('Промпт не был сгенерирован.');
       }
     } catch (error) {
-      console.error('Error generating scene prompt:', error);
+      console.error('Ошибка при генерации промпта сцены:', error);
       toast({
         variant: 'destructive',
-        title: 'Generation Failed',
-        description: 'Could not generate a prompt. Please try again.',
+        title: 'Ошибка генерации',
+        description: 'Не удалось сгенерировать промпт. Пожалуйста, попробуйте еще раз.',
       });
     } finally {
       setIsLoading(false);
@@ -72,19 +72,19 @@ export default function SceneCreationPage() {
 
     setScenes([newScene, ...scenes]);
     toast({
-      title: 'Scene Saved',
-      description: 'The scene has been added to your library.',
+      title: 'Сцена сохранена',
+      description: 'Сцена была добавлена в вашу библиотеку.',
     });
   }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-headline font-bold mb-6">Create a New Scene</h1>
+      <h1 className="text-3xl font-headline font-bold mb-6">Создать новую сцену</h1>
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <Card>
           <CardHeader>
-            <CardTitle>Scene Details</CardTitle>
-            <CardDescription>Fill out the form to generate a scene prompt.</CardDescription>
+            <CardTitle>Детали сцены</CardTitle>
+            <CardDescription>Заполните форму, чтобы сгенерировать промпт для сцены.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -94,9 +94,9 @@ export default function SceneCreationPage() {
                   name="sceneDescription"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Scene Description</FormLabel>
+                      <FormLabel>Описание сцены</FormLabel>
                       <FormControl>
-                        <Textarea rows={6} placeholder="e.g., A bustling neon-lit market on a distant planet, rain-slicked streets reflecting the alien sky..." {...field} />
+                        <Textarea rows={6} placeholder="например, Оживленный неоновый рынок на далекой планете, мокрые от дождя улицы отражают инопланетное небо..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -107,9 +107,9 @@ export default function SceneCreationPage() {
                   name="artStyle"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Art Style</FormLabel>
+                      <FormLabel>Художественный стиль</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Photorealistic, Anime, Watercolor" {...field} />
+                        <Input placeholder="например, Фотореализм, Аниме, Акварель" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -120,9 +120,9 @@ export default function SceneCreationPage() {
                   name="cameraAngle"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Camera Angle</FormLabel>
+                      <FormLabel>Ракурс камеры</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Wide shot, Low angle, Aerial view" {...field} />
+                        <Input placeholder="например, Широкий план, Низкий угол, Вид с воздуха" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -133,9 +133,9 @@ export default function SceneCreationPage() {
                   name="lightingStyle"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Lighting Style</FormLabel>
+                      <FormLabel>Стиль освещения</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Dramatic, Soft, Golden hour" {...field} />
+                        <Input placeholder="например, Драматическое, Мягкое, Золотой час" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -143,7 +143,7 @@ export default function SceneCreationPage() {
                 />
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Generate Prompt
+                  Сгенерировать промпт
                 </Button>
               </form>
             </Form>
@@ -152,8 +152,8 @@ export default function SceneCreationPage() {
 
         <Card className="sticky top-8">
           <CardHeader>
-            <CardTitle>Generated Prompt</CardTitle>
-            <CardDescription>Your AI-generated prompt will appear here.</CardDescription>
+            <CardTitle>Сгенерированный промпт</CardTitle>
+            <CardDescription>Ваш AI-сгенерированный промпт появится здесь.</CardDescription>
           </CardHeader>
           <CardContent className="min-h-[300px]">
             {isLoading ? (
@@ -164,14 +164,14 @@ export default function SceneCreationPage() {
               <Textarea readOnly value={generatedPrompt} className="h-full min-h-[300px] text-base" />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
-                Your prompt is waiting to be forged...
+                Ваш промпт ждет, чтобы его создали...
               </div>
             )}
           </CardContent>
           <CardFooter>
             <Button onClick={saveScene} disabled={!generatedPrompt || isLoading} className="w-full">
               <Save className="mr-2 h-4 w-4" />
-              Save to Library
+              Сохранить в библиотеку
             </Button>
           </CardFooter>
         </Card>

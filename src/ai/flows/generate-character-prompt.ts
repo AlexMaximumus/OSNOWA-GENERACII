@@ -35,20 +35,20 @@ const prompt = ai.definePrompt({
   name: 'generateCharacterPromptPrompt',
   input: {schema: GenerateCharacterPromptInputSchema},
   output: {schema: GenerateCharacterPromptOutputSchema},
-  prompt: `You are a prompt engineer specializing in creating detailed character design prompts.
+  prompt: `Вы — инженер по промптам, специализирующийся на создании подробных промптов для дизайна персонажей.
 
-  Based on the provided character details, generate a prompt that can be used to create an image of the character.
-  The prompt should include details about the character's appearance, clothing, and environment, fitting for the character's genre, occupation and motivations.
+  На основе предоставленных данных о персонаже, сгенерируйте промпт, который можно использовать для создания изображения персонажа.
+  Промпт должен включать детали о внешности, одежде и окружении персонажа, соответствующие его жанру, профессии и мотивации.
 
-  Genre: {{{genre}}}
-  Name: {{{name}}}
-  Age: {{{age}}}
-  Occupation: {{{occupation}}}
-  Personality: {{{personality}}}
-  Appearance: {{{appearance}}}
-  Motivations: {{{motivations}}}
+  Жанр: {{{genre}}}
+  Имя: {{{name}}}
+  Возраст: {{{age}}}
+  Профессия: {{{occupation}}}
+  Характер: {{{personality}}}
+  Внешность: {{{appearance}}}
+  Мотивация: {{{motivations}}}
 
-  Generated Prompt:`, // Ensure this is closed correctly
+  Сгенерированный промпт:`,
 });
 
 const generateCharacterPromptFlow = ai.defineFlow(

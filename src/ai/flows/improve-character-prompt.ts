@@ -42,23 +42,23 @@ const prompt = ai.definePrompt({
   name: 'improveCharacterPromptPrompt',
   input: {schema: ImproveCharacterPromptInputSchema},
   output: {schema: ImproveCharacterPromptOutputSchema},
-  prompt: `You are an AI prompt engineer specializing in character design.
+  prompt: `Вы — AI-инженер по промптам, специализирующийся на дизайне персонажей.
 
-  Analyze the following successful and unsuccessful character prompts and provide suggestions for improving future character prompts.
+  Проанализируйте следующие успешные и неуспешные промпты для персонажей и дайте предложения по улучшению будущих промптов для персонажей.
 
-  Successful Prompts:
+  Успешные промпты:
   {{#each successfulPrompts}}
   - {{{this}}}
   {{/each}}
 
-  Unsuccessful Prompts:
+  Неуспешные промпты:
   {{#each unsuccessfulPrompts}}
   - {{{this}}}
   {{/each}}
 
-  Provide specific and actionable suggestions for improving future character prompts based on the patterns you identify in the successful and unsuccessful prompts.
-  Consider aspects such as clarity, detail, and the use of specific keywords or phrases.
-  Return the suggestions in a numbered list.
+  Предоставьте конкретные и действенные предложения по улучшению будущих промптов для персонажей на основе закономерностей, которые вы выявите в успешных и неуспешных промптах.
+  Учитывайте такие аспекты, как ясность, детализация и использование конкретных ключевых слов или фраз.
+  Верните предложения в виде нумерованного списка.
   `,
 });
 

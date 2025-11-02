@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { MountainSnow, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
+import { ru } from 'date-fns/locale';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 
@@ -15,9 +16,9 @@ function SceneCard({ scene, onDelete }: { scene: Scene, onDelete: (id: string) =
   return (
     <Card className="flex flex-col">
       <CardHeader>
-        <CardTitle className="font-headline line-clamp-1">{scene.artStyle} Style</CardTitle>
+        <CardTitle className="font-headline line-clamp-1">Стиль: {scene.artStyle}</CardTitle>
         <CardDescription>
-          {scene.cameraAngle}, {scene.lightingStyle} lighting
+          {scene.cameraAngle}, {scene.lightingStyle} освещение
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
@@ -25,9 +26,9 @@ function SceneCard({ scene, onDelete }: { scene: Scene, onDelete: (id: string) =
       </CardContent>
       <CardFooter className="flex justify-between items-center">
         <p className="text-xs text-muted-foreground">
-          Created {formatDistanceToNow(new Date(scene.createdAt), { addSuffix: true })}
+          Создано {formatDistanceToNow(new Date(scene.createdAt), { addSuffix: true, locale: ru })}
         </p>
-        <Button variant="ghost" size="icon" onClick={() => onDelete(scene.id)} aria-label="Delete scene">
+        <Button variant="ghost" size="icon" onClick={() => onDelete(scene.id)} aria-label="Удалить сцену">
           <Trash2 className="h-4 w-4 text-destructive" />
         </Button>
       </CardFooter>
@@ -47,8 +48,8 @@ export default function SceneLibraryPage() {
   const handleDelete = (id: string) => {
     setScenes(scenes.filter(s => s.id !== id));
     toast({
-      title: 'Scene Deleted',
-      description: 'The scene has been removed from your library.',
+      title: 'Сцена удалена',
+      description: 'Сцена была удалена из вашей библиотеки.',
       variant: 'destructive',
     });
   };
@@ -56,7 +57,7 @@ export default function SceneLibraryPage() {
   if (!isClient) {
     return (
       <div className="container mx-auto p-4 md:p-8">
-        <h1 className="text-3xl font-headline font-bold mb-6">Scene Library</h1>
+        <h1 className="text-3xl font-headline font-bold mb-6">Библиотека сцен</h1>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {[...Array(6)].map((_, i) => (
             <Card key={i}>
@@ -81,15 +82,15 @@ export default function SceneLibraryPage() {
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-headline font-bold mb-6">Scene Library</h1>
+      <h1 className="text-3xl font-headline font-bold mb-6">Библиотека сцен</h1>
       {scenes.length === 0 ? (
         <div className="text-center py-20 border-2 border-dashed rounded-lg">
-          <h2 className="text-xl font-semibold">Your library is empty.</h2>
-          <p className="text-muted-foreground mt-2">Create a new scene to get started.</p>
+          <h2 className="text-xl font-semibold">Ваша библиотека пуста.</h2>
+          <p className="text-muted-foreground mt-2">Создайте новую сцену, чтобы начать.</p>
           <Button asChild className="mt-4">
             <Link href="/scene-creation">
               <MountainSnow className="mr-2 h-4 w-4" />
-              Create Scene
+              Создать сцену
             </Link>
           </Button>
         </div>

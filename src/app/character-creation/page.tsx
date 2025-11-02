@@ -45,18 +45,18 @@ export default function CharacterCreationPage() {
         setGeneratedPrompt(result.prompt);
         setLastGeneratedCharacter(data);
         toast({
-          title: 'Prompt Generated',
-          description: 'Your character prompt has been successfully created.',
+          title: 'Промпт создан',
+          description: 'Ваш промпт для персонажа был успешно создан.',
         });
       } else {
-        throw new Error('No prompt was generated.');
+        throw new Error('Промпт не был сгенерирован.');
       }
     } catch (error) {
-      console.error('Error generating character prompt:', error);
+      console.error('Ошибка при генерации промпта персонажа:', error);
       toast({
         variant: 'destructive',
-        title: 'Generation Failed',
-        description: 'Could not generate a prompt. Please try again.',
+        title: 'Ошибка генерации',
+        description: 'Не удалось сгенерировать промпт. Пожалуйста, попробуйте еще раз.',
       });
     } finally {
       setIsLoading(false);
@@ -75,19 +75,19 @@ export default function CharacterCreationPage() {
 
     setCharacters([newCharacter, ...characters]);
     toast({
-      title: 'Character Saved',
-      description: `${lastGeneratedCharacter.name} has been added to your library.`,
+      title: 'Персонаж сохранен',
+      description: `${lastGeneratedCharacter.name} был добавлен в вашу библиотеку.`,
     });
   }
 
   return (
     <div className="container mx-auto p-4 md:p-8">
-      <h1 className="text-3xl font-headline font-bold mb-6">Create a New Character</h1>
+      <h1 className="text-3xl font-headline font-bold mb-6">Создать нового персонажа</h1>
       <div className="grid md:grid-cols-2 gap-8 items-start">
         <Card>
           <CardHeader>
-            <CardTitle>Character Details</CardTitle>
-            <CardDescription>Fill out the form to generate a character prompt.</CardDescription>
+            <CardTitle>Детали персонажа</CardTitle>
+            <CardDescription>Заполните форму, чтобы сгенерировать промпт для персонажа.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -97,9 +97,9 @@ export default function CharacterCreationPage() {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Name</FormLabel>
+                      <FormLabel>Имя</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Alistair Croft" {...field} />
+                        <Input placeholder="например, Алистэр Крофт" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -111,9 +111,9 @@ export default function CharacterCreationPage() {
                     name="age"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Age</FormLabel>
+                        <FormLabel>Возраст</FormLabel>
                         <FormControl>
-                          <Input type="number" placeholder="e.g., 35" {...field} />
+                          <Input type="number" placeholder="например, 35" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -124,9 +124,9 @@ export default function CharacterCreationPage() {
                     name="genre"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Genre</FormLabel>
+                        <FormLabel>Жанр</FormLabel>
                         <FormControl>
-                          <Input placeholder="e.g., Sci-fi, Fantasy" {...field} />
+                          <Input placeholder="например, Научная фантастика, Фэнтези" {...field} />
                         </FormControl>
                         <FormMessage />
                       </FormItem>
@@ -138,9 +138,9 @@ export default function CharacterCreationPage() {
                   name="occupation"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Occupation</FormLabel>
+                      <FormLabel>Профессия</FormLabel>
                       <FormControl>
-                        <Input placeholder="e.g., Interstellar Archeologist" {...field} />
+                        <Input placeholder="например, Межзвездный археолог" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -151,9 +151,9 @@ export default function CharacterCreationPage() {
                   name="personality"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Personality Traits</FormLabel>
+                      <FormLabel>Черты характера</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Describe their personality..." {...field} />
+                        <Textarea placeholder="Опишите его характер..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -164,9 +164,9 @@ export default function CharacterCreationPage() {
                   name="appearance"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Appearance</FormLabel>
+                      <FormLabel>Внешность</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="Describe their appearance..." {...field} />
+                        <Textarea placeholder="Опишите его внешность..." {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -177,9 +177,9 @@ export default function CharacterCreationPage() {
                   name="motivations"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Motivations</FormLabel>
+                      <FormLabel>Мотивация</FormLabel>
                       <FormControl>
-                        <Textarea placeholder="What drives them?" {...field} />
+                        <Textarea placeholder="Что им движет?" {...field} />
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -187,7 +187,7 @@ export default function CharacterCreationPage() {
                 />
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                  Generate Prompt
+                  Сгенерировать промпт
                 </Button>
               </form>
             </Form>
@@ -196,8 +196,8 @@ export default function CharacterCreationPage() {
 
         <Card className="sticky top-8">
           <CardHeader>
-            <CardTitle>Generated Prompt</CardTitle>
-            <CardDescription>Your AI-generated prompt will appear here.</CardDescription>
+            <CardTitle>Сгенерированный промпт</CardTitle>
+            <CardDescription>Ваш AI-сгенерированный промпт появится здесь.</CardDescription>
           </CardHeader>
           <CardContent className="min-h-[300px]">
             {isLoading ? (
@@ -208,14 +208,14 @@ export default function CharacterCreationPage() {
               <Textarea readOnly value={generatedPrompt} className="h-full min-h-[300px] text-base" />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
-                Your prompt is waiting to be forged...
+                Ваш промпт ждет, чтобы его создали...
               </div>
             )}
           </CardContent>
           <CardFooter>
             <Button onClick={saveCharacter} disabled={!generatedPrompt || isLoading} className="w-full">
               <Save className="mr-2 h-4 w-4" />
-              Save to Library
+              Сохранить в библиотеку
             </Button>
           </CardFooter>
         </Card>

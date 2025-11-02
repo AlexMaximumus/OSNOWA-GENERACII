@@ -40,19 +40,19 @@ const prompt = ai.definePrompt({
   name: 'improveScenePromptPrompt',
   input: {schema: ImproveScenePromptInputSchema},
   output: {schema: ImproveScenePromptOutputSchema},
-  prompt: `You are an AI prompt improvement assistant. Analyze the following successful and unsuccessful scene prompts and provide suggestions for improving future scene prompts.
+  prompt: `Вы — AI-помощник по улучшению промптов. Проанализируйте следующие успешные и неуспешные промпты для сцен и дайте предложения по улучшению будущих промптов.
 
-Successful Prompts:
+Успешные промпты:
 {{#each successfulPrompts}}
 - {{{this}}}
 {{/each}}
 
-Unsuccessful Prompts:
+Неуспешные промпты:
 {{#each unsuccessfulPrompts}}
 - {{{this}}}
 {{/each}}
 
-Provide specific and actionable suggestions for improving future scene prompts based on the patterns you observe in the successful and unsuccessful prompts.
+Предоставьте конкретные и действенные предложения по улучшению будущих промптов для сцен на основе закономерностей, которые вы заметите в успешных и неуспешных промптах.
 `,
 });
 

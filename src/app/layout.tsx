@@ -6,8 +6,8 @@ import AppSidebar from '@/components/app-sidebar';
 import { Toaster } from '@/components/ui/toaster';
 
 export const metadata: Metadata = {
-  title: 'Story Forge',
-  description: 'AI-powered prompt generation for characters and scenes.',
+  title: 'Кузница Историй',
+  description: 'Генерация промптов для персонажей и сцен с помощью ИИ.',
 };
 
 export default function RootLayout({
@@ -16,7 +16,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="ru" suppressHydrationWarning>
       <head>
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
