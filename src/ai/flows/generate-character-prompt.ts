@@ -16,6 +16,17 @@ import { jsonPromptInstructions } from '@/lib/json-prompt-instructions';
 
 const GenerateCharacterPromptInputSchema = z.object({
   description: z.string().describe('A general description of the character.'),
+  artStyle: z
+    .string()
+    .describe('Preferred art style for the character (e.g., photorealistic, painting, cartoon).'),
+  cameraAngle: z
+    .string()
+    .describe('Desired camera angle or perspective (e.g., wide shot, close-up, aerial view).'),
+  lightingStyle: z
+    .string()
+    .describe('Type of lighting for the scene (e.g., soft, dramatic, natural).'),
+  camera: z.string().describe('The camera used for the shot.'),
+  filmType: z.string().describe('The type of film used.'),
   promptType: PromptTypeSchema,
 });
 export type GenerateCharacterPromptInput = z.infer<typeof GenerateCharacterPromptInputSchema>;
@@ -48,6 +59,11 @@ const prompt = ai.definePrompt({
   {{/ifCond}}
   
   Описание персонажа: {{{description}}}
+  Художественный стиль: {{{artStyle}}}
+  Ракурс камеры: {{{cameraAngle}}}
+  Стиль освещения: {{{lightingStyle}}}
+  Камера: {{{camera}}}
+  Тип пленки: {{{filmType}}}
   `,
 });
 

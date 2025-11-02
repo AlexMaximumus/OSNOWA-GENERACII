@@ -13,6 +13,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { Character, CharacterFormData, CharacterFormSchema } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { photoStyles } from '@/lib/photo-styles';
+import { cameraAngles } from '@/lib/camera-angles';
+import { lightingStyles } from '@/lib/lighting-styles';
+import { cameras } from '@/lib/cameras';
+import { filmTypes } from '@/lib/film-types';
 
 export default function CharacterCreationPage() {
   const [generatedPrompt, setGeneratedPrompt] = useState('');
@@ -27,6 +33,11 @@ export default function CharacterCreationPage() {
     resolver: zodResolver(CharacterFormSchema),
     defaultValues: {
       description: '',
+      artStyle: '',
+      cameraAngle: '',
+      lightingStyle: '',
+      camera: '',
+      filmType: '',
       promptType: 'artistic',
     },
   });
@@ -86,7 +97,7 @@ export default function CharacterCreationPage() {
         <Card>
           <CardHeader>
             <CardTitle>Детали персонажа</CardTitle>
-            <CardDescription>Опишите вашего персонажа в общих чертах.</CardDescription>
+            <CardDescription>Опишите вашего персонажа и выберите стили.</CardDescription>
           </CardHeader>
           <CardContent>
             <Form {...form}>
@@ -133,11 +144,121 @@ export default function CharacterCreationPage() {
                       <FormLabel>Описание персонажа</FormLabel>
                       <FormControl>
                         <Textarea 
-                          rows={15}
+                          rows={8}
                           placeholder="Например: Аларик, мрачный эльфийский следопыт с седыми волосами и шрамом на глазу. Он одет в потертую кожаную броню и носит лук из тисового дерева. Его цель - отомстить за свою семью." 
                           {...field} 
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="artStyle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Художественный стиль</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите художественный стиль" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {photoStyles.map((style) => (
+                            <SelectItem key={style} value={style}>{style}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="cameraAngle"
+                  render={({ field }) => (
+                     <FormItem>
+                      <FormLabel>Ракурс камеры</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите ракурс камеры" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {cameraAngles.map((angle) => (
+                            <SelectItem key={angle} value={angle}>{angle}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lightingStyle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Стиль освещения</FormLabel>
+                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите стиль освещения" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {lightingStyles.map((style) => (
+                            <SelectItem key={style} value={style}>{style}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="camera"
+                  render={({ field }) => (
+                     <FormItem>
+                      <FormLabel>Камера</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите камеру" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {cameras.map((camera) => (
+                            <SelectItem key={camera} value={camera}>{camera}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="filmType"
+                  render={({ field }) => (
+                     <FormItem>
+                      <FormLabel>Тип пленки</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите тип пленки" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {filmTypes.map((film) => (
+                            <SelectItem key={film} value={film}>{film}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

@@ -18,7 +18,7 @@ function CharacterCard({ character, onDelete }: { character: Character, onDelete
       <CardHeader>
         <CardTitle className="font-headline">{character.name}</CardTitle>
         <CardDescription className="line-clamp-2">
-            {character.description}
+            {character.artStyle}
         </CardDescription>
       </CardHeader>
       <CardContent className="flex-grow">
