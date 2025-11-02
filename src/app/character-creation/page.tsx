@@ -61,19 +61,14 @@ export default function CharacterCreationPage() {
     setGeneratedData(null);
     setLastGeneratedCharacter(null);
     try {
-      // If studio, force photorealism for better results
-      const submissionData = data.creationType === 'studio' 
-        ? { ...data, artStyle: 'Photorealism' }
-        : data;
-
-      const result = await generateCharacterPrompt(submissionData);
+      const result = await generateCharacterPrompt(data);
       if (result.prompt && result.name && result.appearanceDescription) {
         setGeneratedData({
             prompt: result.prompt,
             name: result.name,
             appearanceDescription: result.appearanceDescription
         });
-        setLastGeneratedCharacter(submissionData);
+        setLastGeneratedCharacter(data);
         toast({
           title: 'Prompt Generated',
           description: `Your prompt for "${result.name}" has been successfully created.`,
@@ -239,98 +234,94 @@ export default function CharacterCreationPage() {
                   )}
                 />
 
-                {creationType === 'inScene' && (
-                  <>
-                    <FormField
-                      control={form.control}
-                      name="cameraAngle"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Camera Angle</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a camera angle" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {cameraAngles.map((angle) => (
-                                <SelectItem key={angle} value={angle}>{angle}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="lightingStyle"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Lighting Style</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a lighting style" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {lightingStyles.map((style) => (
-                                <SelectItem key={style} value={style}>{style}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="camera"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Camera</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a camera" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {cameras.map((camera) => (
-                                <SelectItem key={camera} value={camera}>{camera}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                    <FormField
-                      control={form.control}
-                      name="filmType"
-                      render={({ field }) => (
-                        <FormItem>
-                          <FormLabel>Film Type</FormLabel>
-                          <Select onValueChange={field.onChange} defaultValue={field.value}>
-                            <FormControl>
-                              <SelectTrigger>
-                                <SelectValue placeholder="Select a film type" />
-                              </SelectTrigger>
-                            </FormControl>
-                            <SelectContent>
-                              {filmTypes.map((film) => (
-                                <SelectItem key={film} value={film}>{film}</SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                          <FormMessage />
-                        </FormItem>
-                      )}
-                    />
-                  </>
-                )}
+                <FormField
+                  control={form.control}
+                  name="cameraAngle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Camera Angle</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a camera angle" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {cameraAngles.map((angle) => (
+                            <SelectItem key={angle} value={angle}>{angle}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="lightingStyle"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Lighting Style</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a lighting style" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {lightingStyles.map((style) => (
+                            <SelectItem key={style} value={style}>{style}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="camera"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Camera</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a camera" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {cameras.map((camera) => (
+                            <SelectItem key={camera} value={camera}>{camera}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name="filmType"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Film Type</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a film type" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {filmTypes.map((film) => (
+                            <SelectItem key={film} value={film}>{film}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Generate Prompt
