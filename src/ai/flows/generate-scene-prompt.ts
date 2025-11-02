@@ -27,6 +27,8 @@ const GenerateScenePromptInputSchema = z.object({
   lightingStyle: z
     .string()
     .describe('Type of lighting for the scene (e.g., soft, dramatic, natural).'),
+  camera: z.string().describe('The camera used for the shot.'),
+  filmType: z.string().describe('The type of film used.'),
   promptType: PromptTypeSchema,
 });
 export type GenerateScenePromptInput = z.infer<typeof GenerateScenePromptInputSchema>;
@@ -59,6 +61,8 @@ const prompt = ai.definePrompt({
   Художественный стиль: {{{artStyle}}}
   Ракурс камеры: {{{cameraAngle}}}
   Стиль освещения: {{{lightingStyle}}}
+  Камера: {{{camera}}}
+  Тип пленки: {{{filmType}}}
 
   Сгенерированный промпт должен быть очень описательным и включать детали об окружении, персонажах (если есть), объектах, атмосфере и общей композиции, чтобы направить модель ИИ на создание желаемой сцены.
   `,

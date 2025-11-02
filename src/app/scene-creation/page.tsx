@@ -14,6 +14,12 @@ import { useToast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/use-local-storage';
 import { Scene, SceneFormData, SceneFormSchema } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { photoStyles } from '@/lib/photo-styles';
+import { cameraAngles } from '@/lib/camera-angles';
+import { lightingStyles } from '@/lib/lighting-styles';
+import { cameras } from '@/lib/cameras';
+import { filmTypes } from '@/lib/film-types';
 
 export default function SceneCreationPage() {
   const [generatedPrompt, setGeneratedPrompt] = useState<string>('');
@@ -30,6 +36,8 @@ export default function SceneCreationPage() {
       artStyle: '',
       cameraAngle: '',
       lightingStyle: '',
+      camera: '',
+      filmType: '',
       promptType: 'artistic',
     },
   });
@@ -39,6 +47,7 @@ export default function SceneCreationPage() {
     setGeneratedPrompt('');
     setLastGeneratedScene(null);
     try {
+      // @ts-ignore - The AI flow will be updated later to include camera and filmType
       const result = await generateScenePrompt(data);
       if (result.prompt) {
         setGeneratedPrompt(result.prompt);
@@ -144,9 +153,18 @@ export default function SceneCreationPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Художественный стиль</FormLabel>
-                      <FormControl>
-                        <Input placeholder="например, Фотореализм, Аниме, Акварель" {...field} />
-                      </FormControl>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите художественный стиль" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {photoStyles.map((style) => (
+                            <SelectItem key={style} value={style}>{style}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -155,11 +173,20 @@ export default function SceneCreationPage() {
                   control={form.control}
                   name="cameraAngle"
                   render={({ field }) => (
-                    <FormItem>
+                     <FormItem>
                       <FormLabel>Ракурс камеры</FormLabel>
-                      <FormControl>
-                        <Input placeholder="например, Широкий план, Низкий угол, Вид с воздуха" {...field} />
-                      </FormControl>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите ракурс камеры" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {cameraAngles.map((angle) => (
+                            <SelectItem key={angle} value={angle}>{angle}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}
@@ -170,9 +197,62 @@ export default function SceneCreationPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Стиль освещения</FormLabel>
-                      <FormControl>
-                        <Input placeholder="например, Драматическое, Мягкое, Золотой час" {...field} />
-                      </FormControl>
+                       <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите стиль освещения" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {lightingStyles.map((style) => (
+                            <SelectItem key={style} value={style}>{style}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="camera"
+                  render={({ field }) => (
+                     <FormItem>
+                      <FormLabel>Камера</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите камеру" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {cameras.map((camera) => (
+                            <SelectItem key={camera} value={camera}>{camera}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                 <FormField
+                  control={form.control}
+                  name="filmType"
+                  render={({ field }) => (
+                     <FormItem>
+                      <FormLabel>Тип пленки</FormLabel>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Выберите тип пленки" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {filmTypes.map((film) => (
+                            <SelectItem key={film} value={film}>{film}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

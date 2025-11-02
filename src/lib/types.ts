@@ -29,6 +29,8 @@ export const SceneFormSchema = z.object({
   artStyle: z.string().min(1, "Художественный стиль обязателен."),
   cameraAngle: z.string().min(1, "Ракурс камеры обязателен."),
   lightingStyle: z.string().min(1, "Стиль освещения обязателен."),
+  camera: z.string().min(1, "Выбор камеры обязателен."),
+  filmType: z.string().min(1, "Выбор пленки обязателен."),
   promptType: PromptTypeSchema.default("artistic"),
 });
 export type SceneFormData = z.infer<typeof SceneFormSchema>;
