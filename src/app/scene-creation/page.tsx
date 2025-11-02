@@ -105,9 +105,7 @@ function SceneCreationForm() {
     
     const outfit = outfits.find(o => o.id === data.outfitId);
 
-    // Combine the base character prompt with the outfit description.
-    // The name is NOT included, only the visual details.
-    let characterVisuals = character.prompt;
+    let characterVisuals = character.appearanceDescription;
     
     if (outfit) {
         characterVisuals += `\n\nOutfit: ${outfit.prompt}`;
@@ -535,7 +533,7 @@ function SceneCreationForm() {
                               <FormControl>
                                   <SelectTrigger>
                                   <SelectValue placeholder="Select a camera" />
-                                  </TSelectTrigger>
+                                  </SelectTrigger>
                               </FormControl>
                               <SelectContent>
                                   <SelectItem value="none">None</SelectItem>
@@ -652,3 +650,5 @@ export default function SceneCreationPage() {
         </Suspense>
     )
 }
+
+    
