@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Copy, Loader2, Save, Wand, Users, RotateCw, Shirt, Library } from 'lucide-react';
+import { Copy, Loader2, Save, Wand, Users, RotateCw, Shirt, Library, Star, Trash2 } from 'lucide-react';
 import { generateScenePrompt } from '@/ai/flows/generate-scene-prompt';
 import { regenerateScenePrompt } from '@/ai/flows/regenerate-scene-prompt';
 import { Button } from '@/components/ui/button';
@@ -12,7 +12,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Character, Scene, SceneFormData, SceneFormSchema, Outfit } from '@/lib/types';
+import { Character, Scene, SceneFormData, SceneFormSchema, Outfit, Location } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { photoStyles } from '@/lib/photo-styles';
@@ -21,6 +21,7 @@ import { lightingStyles } from '@/lib/lighting-styles';
 import { cameras } from '@/lib/cameras';
 import { filmTypes } from '@/lib/film-types';
 import { useSearchParams } from 'next/navigation';
+import { useFavoriteSettings } from '@/hooks/use-favorite-settings';
 
 function SceneCreationForm() {
   const searchParams = useSearchParams();
@@ -34,6 +35,8 @@ function SceneCreationForm() {
   const [scenes, setScenes] = useLocalStorage<Scene[]>('scenes', []);
   const [characters] = useLocalStorage<Character[]>('characters', []);
   const [outfits] = useLocalStorage<Outfit[]>('outfits', []);
+  const [locations] = useLocalStorage<Location[]>('locations', []);
+  const { favoriteSettings, saveFavoriteSettings, resetFavoriteSettings } = useFavoriteSettings();
   
   const form = useForm<SceneFormData>({
     resolver: zodResolver(SceneFormSchema),
@@ -41,11 +44,12 @@ function SceneCreationForm() {
       sceneDescription: '',
       characterId: 'none',
       outfitId: 'none',
-      artStyle: 'none',
-      cameraAngle: 'none',
-      lightingStyle: 'none',
-      camera: 'none',
-      filmType: 'none',
+      locationId: 'none',
+      artStyle: favoriteSettings.artStyle,
+      cameraAngle: favoriteSettings.cameraAngle,
+      lightingStyle: favoriteSettings.lightingStyle,
+      camera: favoriteSettings.camera,
+      filmType: favoriteSettings.filmType,
       promptType: 'artistic',
     },
   });
@@ -58,6 +62,7 @@ function SceneCreationForm() {
       ...scene,
       characterId: scene.characterId || 'none',
       outfitId: scene.outfitId || 'none',
+      locationId: scene.locationId || 'none',
     });
     if (scene.prompt) {
       setGeneratedPrompt(scene.prompt);
@@ -77,13 +82,17 @@ function SceneCreationForm() {
     }
   }, [searchParams, scenes]);
 
-
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       toast({
         title: 'Copied to clipboard!',
       });
     });
+  };
+  
+  const handleSaveFavorites = () => {
+    const currentSettings = form.getValues();
+    saveFavoriteSettings(currentSettings);
   };
 
   const getCharacterInfo = (data: SceneFormData): string | undefined => {
@@ -102,6 +111,16 @@ function SceneCreationForm() {
     return fullDescription;
   };
 
+  const getLocationInfo = (data: SceneFormData): string => {
+    if (data.locationId && data.locationId !== 'none') {
+        const location = locations.find(l => l.id === data.locationId);
+        if (location) {
+            return `Use this existing location prompt: ${location.prompt}`;
+        }
+    }
+    return data.sceneDescription;
+  };
+
   async function handleGeneration(data: SceneFormData, isRegen: boolean) {
     if (isRegen) {
       setIsRegenerating(true);
@@ -115,23 +134,25 @@ function SceneCreationForm() {
 
     try {
       const characterInfo = getCharacterInfo(data);
+      const sceneInfo = getLocationInfo(data);
       
       let result;
+      const promptInput = {
+          ...data,
+          sceneDescription: sceneInfo,
+          characterInfo,
+      };
+
       if (isRegen) {
-         result = await regenerateScenePrompt({
-          ...data,
-          characterInfo
-        });
+         result = await regenerateScenePrompt(promptInput);
       } else {
-        result = await generateScenePrompt({
-          ...data,
-          characterInfo
-        });
+        result = await generateScenePrompt(promptInput);
       }
 
       if (result.prompt) {
         setGeneratedPrompt(result.prompt);
         if(!isRegen) {
+          // Save original form data before it was modified by getLocationInfo
           setLastGeneratedData(data);
         }
         toast({
@@ -196,10 +217,22 @@ function SceneCreationForm() {
   const currentPromptType = form.watch('promptType');
   const isArtisticPrompt = currentPromptType === 'artistic';
   const selectedCharacterId = form.watch('characterId');
+  const selectedLocationId = form.watch('locationId');
 
   const handleSceneSelect = (sceneId: string) => {
     if (sceneId === 'none') {
-      form.reset();
+      form.reset({
+        sceneDescription: '',
+        characterId: 'none',
+        outfitId: 'none',
+        locationId: 'none',
+        artStyle: favoriteSettings.artStyle,
+        cameraAngle: favoriteSettings.cameraAngle,
+        lightingStyle: favoriteSettings.lightingStyle,
+        camera: favoriteSettings.camera,
+        filmType: favoriteSettings.filmType,
+        promptType: 'artistic',
+      });
       setEditingScene(null);
       setGeneratedPrompt(null);
       setLastGeneratedData(null);
@@ -241,6 +274,36 @@ function SceneCreationForm() {
                   </Select>
                 </FormItem>
 
+                 <FormField
+                  control={form.control}
+                  name="locationId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel className="flex items-center">
+                        <Library className="mr-2 h-4 w-4" />
+                        Use Location from Library
+                      </FormLabel>
+                      <Select onValueChange={field.onChange} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger disabled={locations.length === 0}>
+                            <SelectValue placeholder={locations.length > 0 ? "Select a location..." : "No locations in library"} />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">Describe location manually</SelectItem>
+                          {locations.map((loc) => (
+                            <SelectItem key={loc.id} value={loc.id}>{loc.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormDescription>
+                        Select a saved location to use its prompt as the base for the scene.
+                      </FormDescription>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
                 <FormField
                   control={form.control}
                   name="sceneDescription"
@@ -251,7 +314,8 @@ function SceneCreationForm() {
                         <Textarea 
                           rows={8}
                           placeholder="e.g., A quiet, rain-slicked alley in Shinjuku at midnight, illuminated by a single flickering neon sign. A sense of loneliness and mystery." 
-                          {...field} 
+                          {...field}
+                          disabled={selectedLocationId !== 'none'}
                         />
                       </FormControl>
                       <FormMessage />
@@ -358,124 +422,133 @@ function SceneCreationForm() {
                   )}
                 />
                 
-                <FormField
-                  control={form.control}
-                  name="artStyle"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Art Style</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
-                        <FormControl>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select an art style" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          <SelectItem value="none">None</SelectItem>
-                          {photoStyles.map((style) => (
-                            <SelectItem key={style} value={style}>{style}</SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
+                <div className="space-y-2 p-4 border rounded-lg">
+                    <h3 className="text-lg font-semibold">Generation Settings</h3>
+                    <div className="flex items-center gap-2">
+                        <Button type="button" size="sm" onClick={handleSaveFavorites}><Star className="mr-2 h-4 w-4" /> Save as Favorite</Button>
+                        <Button type="button" size="sm" variant="outline" onClick={resetFavoriteSettings}><Trash2 className="mr-2 h-4 w-4" /> Reset</Button>
+                    </div>
 
-                {isArtisticPrompt && (<>
-                  <FormField
+                    <FormField
                     control={form.control}
-                    name="cameraAngle"
+                    name="artStyle"
                     render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Camera Angle</FormLabel>
+                        <FormItem>
+                        <FormLabel>Art Style</FormLabel>
                         <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
+                            <FormControl>
                             <SelectTrigger>
-                              <SelectValue placeholder="Select a camera angle" />
+                                <SelectValue placeholder="Select an art style" />
                             </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
+                            </FormControl>
+                            <SelectContent>
                             <SelectItem value="none">None</SelectItem>
-                            {cameraAngles.map((angle) => (
-                              <SelectItem key={angle} value={angle}>{angle}</SelectItem>
+                            {photoStyles.map((style) => (
+                                <SelectItem key={style} value={style}>{style}</SelectItem>
                             ))}
-                          </SelectContent>
+                            </SelectContent>
                         </Select>
                         <FormMessage />
-                      </FormItem>
+                        </FormItem>
                     )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="lightingStyle"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Lighting Style</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a lighting style" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            {lightingStyles.map((style) => (
-                              <SelectItem key={style} value={style}>{style}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="camera"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Camera</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a camera" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            {cameras.map((camera) => (
-                              <SelectItem key={camera} value={camera}>{camera}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="filmType"
-                    render={({ field }) => (
-                      <FormItem>
-                        <FormLabel>Film Type</FormLabel>
-                        <Select onValueChange={field.onChange} value={field.value}>
-                          <FormControl>
-                            <SelectTrigger>
-                              <SelectValue placeholder="Select a film type" />
-                            </SelectTrigger>
-                          </FormControl>
-                          <SelectContent>
-                            <SelectItem value="none">None</SelectItem>
-                            {filmTypes.map((film) => (
-                              <SelectItem key={film} value={film}>{film}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </>)}
+                    />
+
+                    {isArtisticPrompt && (<>
+                    <FormField
+                        control={form.control}
+                        name="cameraAngle"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Camera Angle</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Select a camera angle" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="none">None</SelectItem>
+                                {cameraAngles.map((angle) => (
+                                <SelectItem key={angle} value={angle}>{angle}</SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="lightingStyle"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Lighting Style</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Select a lighting style" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="none">None</SelectItem>
+                                {lightingStyles.map((style) => (
+                                <SelectItem key={style} value={style}>{style}</SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="camera"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Camera</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Select a camera" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="none">None</SelectItem>
+                                {cameras.map((camera) => (
+                                <SelectItem key={camera} value={camera}>{camera}</SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    <FormField
+                        control={form.control}
+                        name="filmType"
+                        render={({ field }) => (
+                        <FormItem>
+                            <FormLabel>Film Type</FormLabel>
+                            <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                                <SelectTrigger>
+                                <SelectValue placeholder="Select a film type" />
+                                </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                                <SelectItem value="none">None</SelectItem>
+                                {filmTypes.map((film) => (
+                                <SelectItem key={film} value={film}>{film}</SelectItem>
+                                ))}
+                            </SelectContent>
+                            </Select>
+                            <FormMessage />
+                        </FormItem>
+                        )}
+                    />
+                    </>)}
+                </div>
+
 
                 <Button type="submit" disabled={isLoading} className="w-full">
                   {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand className="mr-2 h-4 w-4" />}
