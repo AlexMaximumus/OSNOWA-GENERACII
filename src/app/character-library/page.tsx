@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Character, CharacterFormData, CharacterFormSchema, photoStyles, cameraAngles, lightingStyles, cameras, filmTypes } from '@/lib/types';
+import { Character, CharacterFormData, CharacterFormSchema } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Copy, Trash2, UserPlus, Edit, Save, X } from 'lucide-react';
@@ -18,6 +18,11 @@ import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { photoStyles } from '@/lib/photo-styles';
+import { cameraAngles } from '@/lib/camera-angles';
+import { lightingStyles } from '@/lib/lighting-styles';
+import { cameras } from '@/lib/cameras';
+import { filmTypes } from '@/lib/film-types';
 
 
 function CharacterCard({ character, onDelete, onUpdate }: { character: Character, onDelete: (id: string) => void, onUpdate: (id: string, data: CharacterFormData) => void }) {
@@ -190,6 +195,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <SelectItem value="">None</SelectItem>
                           {photoStyles.map((style) => (
                             <SelectItem key={style} value={style}>{style}</SelectItem>
                           ))}
@@ -213,6 +219,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <SelectItem value="">None</SelectItem>
                           {cameraAngles.map((angle) => (
                             <SelectItem key={angle} value={angle}>{angle}</SelectItem>
                           ))}
@@ -235,6 +242,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <SelectItem value="">None</SelectItem>
                           {lightingStyles.map((style) => (
                             <SelectItem key={style} value={style}>{style}</SelectItem>
                           ))}
@@ -257,6 +265,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <SelectItem value="">None</SelectItem>
                           {cameras.map((camera) => (
                             <SelectItem key={camera} value={camera}>{camera}</SelectItem>
                           ))}
@@ -279,6 +288,7 @@ function CharacterCard({ character, onDelete, onUpdate }: { character: Character
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <SelectItem value="">None</SelectItem>
                           {filmTypes.map((film) => (
                             <SelectItem key={film} value={film}>{film}</SelectItem>
                           ))}
@@ -472,5 +482,3 @@ export default function CharacterLibraryPage() {
     </div>
   );
 }
-
-    

@@ -38,7 +38,7 @@ export default function CharacterCreationPage() {
     resolver: zodResolver(CharacterFormSchema),
     defaultValues: {
       description: '',
-      artStyle: 'Photorealism',
+      artStyle: '',
       cameraAngle: '',
       lightingStyle: '',
       camera: '',
@@ -224,6 +224,7 @@ export default function CharacterCreationPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <SelectItem value="">None</SelectItem>
                           {photoStyles.map((style) => (
                             <SelectItem key={style} value={style}>{style}</SelectItem>
                           ))}
@@ -247,6 +248,7 @@ export default function CharacterCreationPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                           <SelectItem value="">None</SelectItem>
                           {cameraAngles.map((angle) => (
                             <SelectItem key={angle} value={angle}>{angle}</SelectItem>
                           ))}
@@ -269,6 +271,7 @@ export default function CharacterCreationPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <SelectItem value="">None</SelectItem>
                           {lightingStyles.map((style) => (
                             <SelectItem key={style} value={style}>{style}</SelectItem>
                           ))}
@@ -291,6 +294,7 @@ export default function CharacterCreationPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <SelectItem value="">None</SelectItem>
                           {cameras.map((camera) => (
                             <SelectItem key={camera} value={camera}>{camera}</SelectItem>
                           ))}
@@ -313,6 +317,7 @@ export default function CharacterCreationPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
+                          <SelectItem value="">None</SelectItem>
                           {filmTypes.map((film) => (
                             <SelectItem key={film} value={film}>{film}</SelectItem>
                           ))}
