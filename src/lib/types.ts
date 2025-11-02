@@ -9,11 +9,11 @@ export type CreationType = z.infer<typeof CreationTypeSchema>;
 // For form validation
 export const CharacterFormSchema = z.object({
   description: z.string().min(1, "Description is required."),
-  artStyle: z.string().optional(),
-  cameraAngle: z.string().optional(),
-  lightingStyle: z.string().optional(),
-  camera: z.string().optional(),
-  filmType: z.string().optional(),
+  artStyle: z.string().optional().default(''),
+  cameraAngle: z.string().optional().default(''),
+  lightingStyle: z.string().optional().default(''),
+  camera: z.string().optional().default(''),
+  filmType: z.string().optional().default(''),
   promptType: PromptTypeSchema.default("artistic"),
   creationType: CreationTypeSchema.default("inScene"),
 });
@@ -31,11 +31,11 @@ export type Character = CharacterFormData & {
 // For form validation
 export const SceneFormSchema = z.object({
   sceneDescription: z.string().min(1, "Scene description is required."),
-  artStyle: z.string().optional(),
-  cameraAngle: z.string().optional(),
-  lightingStyle: z.string().optional(),
-  camera: z.string().optional(),
-  filmType: z.string().optional(),
+  artStyle: z.string().optional().default(''),
+  cameraAngle: z.string().optional().default(''),
+  lightingStyle: z.string().optional().default(''),
+  camera: z.string().optional().default(''),
+  filmType: z.string().optional().default(''),
   promptType: PromptTypeSchema.default("artistic"),
 });
 export type SceneFormData = z.infer<typeof SceneFormSchema>;
@@ -46,3 +46,5 @@ export type Scene = SceneFormData & {
   prompt: string;
   createdAt: string; // Use ISO string for serialization
 };
+
+    

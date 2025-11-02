@@ -38,11 +38,11 @@ export default function CharacterCreationPage() {
     resolver: zodResolver(CharacterFormSchema),
     defaultValues: {
       description: '',
-      artStyle: '',
-      cameraAngle: '',
-      lightingStyle: '',
-      camera: '',
-      filmType: '',
+      artStyle: 'none',
+      cameraAngle: 'none',
+      lightingStyle: 'none',
+      camera: 'none',
+      filmType: 'none',
       promptType: 'artistic',
       creationType: 'inScene',
     },
@@ -217,14 +217,14 @@ export default function CharacterCreationPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Art Style</FormLabel>
-                      <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                      <Select onValueChange={field.onChange} defaultValue={field.value}>
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select an art style" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {photoStyles.map((style) => (
                             <SelectItem key={style} value={style}>{style}</SelectItem>
                           ))}
@@ -245,10 +245,10 @@ export default function CharacterCreationPage() {
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a camera angle" />
-                          </SelectTrigger>
+                          </Trigger>
                         </FormControl>
                         <SelectContent>
-                           <SelectItem value="">None</SelectItem>
+                           <SelectItem value="none">None</SelectItem>
                           {cameraAngles.map((angle) => (
                             <SelectItem key={angle} value={angle}>{angle}</SelectItem>
                           ))}
@@ -271,7 +271,7 @@ export default function CharacterCreationPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {lightingStyles.map((style) => (
                             <SelectItem key={style} value={style}>{style}</SelectItem>
                           ))}
@@ -294,7 +294,7 @@ export default function CharacterCreationPage() {
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {cameras.map((camera) => (
                             <SelectItem key={camera} value={camera}>{camera}</SelectItem>
                           ))}
@@ -314,10 +314,10 @@ export default function CharacterCreationPage() {
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a film type" />
-                          </SelectTrigger>
+                          </Trigger>
                         </FormControl>
                         <SelectContent>
-                          <SelectItem value="">None</SelectItem>
+                          <SelectItem value="none">None</SelectItem>
                           {filmTypes.map((film) => (
                             <SelectItem key={film} value={film}>{film}</SelectItem>
                           ))}

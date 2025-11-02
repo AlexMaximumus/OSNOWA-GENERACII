@@ -58,7 +58,7 @@ const generateCharacterPromptFlow = ai.defineFlow(
     let basePrompt = `You are a prompt engineer specializing in creating detailed character design prompts.
 
 Analyze the following character description. Extract the character's name and generate:
-1. A detailed prompt for creating an image of this character.
+1. A detailed prompt for creating an image of this character. The prompt must be at least 3000 characters long.
 2. A separate, detailed physical description of the character from head to toe.
 
 If a name is not explicitly provided, invent one.
@@ -83,11 +83,11 @@ If the user has provided specific parameters (style, camera, etc.), use them. If
     const finalPrompt = `${basePrompt}
   
 Character Description: ${input.description}
-${input.artStyle ? `Art Style: ${input.artStyle}` : ''}
-${input.cameraAngle ? `Camera Angle: ${input.cameraAngle}` : ''}
-${input.lightingStyle ? `Lighting Style: ${input.lightingStyle}` : ''}
-${input.camera ? `Camera: ${input.camera}` : ''}
-${input.filmType ? `Film Type: ${input.filmType}` : ''}
+${input.artStyle && input.artStyle !== 'none' ? `Art Style: ${input.artStyle}` : ''}
+${input.cameraAngle && input.cameraAngle !== 'none' ? `Camera Angle: ${input.cameraAngle}` : ''}
+${input.lightingStyle && input.lightingStyle !== 'none' ? `Lighting Style: ${input.lightingStyle}` : ''}
+${input.camera && input.camera !== 'none' ? `Camera: ${input.camera}` : ''}
+${input.filmType && input.filmType !== 'none' ? `Film Type: ${input.filmType}` : ''}
 `;
 
     const prompt = ai.definePrompt({
@@ -100,3 +100,5 @@ ${input.filmType ? `Film Type: ${input.filmType}` : ''}
     return output!;
   }
 );
+
+    

@@ -4,7 +4,17 @@
  * @fileOverview Generates an optimized prompt for scene generation based on user inputs.
  *
  * - generateScenePrompt - A function that generates the scene prompt.
- * - GenerateScenePromptInput - The input type for the generateScenePrompt function.
+ * - GenerateScenePromptInput - The input type for the generateScenePrompt function A soft film photo taken on a {camera} with a {filmType} lens, 
+shot from a {cameraAngle}, 
+the scene shows [main character: young woman / man / couple / group of people], 
+they are [action: provide an exhaustive description of what they are doing, their posture, where they are looking, the precise position of their hands, the state of their hair, and how their clothes hang or move], 
+location is [specific place: describe the location in extreme detail, such as a quiet backstreet / riverside / park bench / seaside walk], 
+lighting is {lightingStyle}, 
+the background includes [environment details: meticulously describe every visible element like buildings, signs, wires, bicycles, windows, plants, paths, water, and shadows, adding nuance and texture to each], 
+colors are [be very specific about the color palette, such as cool tones with slightly faded, natural film grain, no digital sharpness, and a soft pastel mood, describing how colors interact], 
+the atmosphere feels [sensations: elaborate on the sensory experience, including light wind, specific street sounds, smells of food or nature, distant conversations, and the feeling of the air], 
+extra details: [micro-details: focus on the smallest details like the folds and texture of clothing, the subtle movement of a single strand of hair, the specific shape of a branch's shadow, complex reflections on wet asphalt, the weave of the fabric, and the specific wear-and-tear on sneakers], 
+overall: [description of feeling — create a comprehensive summary of the feeling, such as spontaneous, imperfect, deeply calm, authentic, embodying the wabi-sabi aesthetic, and a natural, immersive film mood].
  * - GenerateScenePromptOutput - The return type for the generateScenePrompt function.
  */
 
@@ -37,7 +47,7 @@ const GenerateScenePromptInputSchema = z.object({
 export type GenerateScenePromptInput = z.infer<typeof GenerateScenePromptInputSchema>;
 
 const GenerateScenePromptOutputSchema = z.object({
-  prompt: z.string().describe('The generated prompt for creating the scene image.'),
+  prompt: z.string().describe('The generated prompt for creating the scene image. The prompt must be at least 3000 characters long.'),
 });
 export type GenerateScenePromptOutput = z.infer<typeof GenerateScenePromptOutputSchema>;
 
@@ -53,7 +63,7 @@ const generateScenePromptFlow = ai.defineFlow(
   },
   async (input) => {
     
-    let basePrompt = `You are an expert prompt engineer specializing in creating detailed and optimized prompts for generating scene images based on user inputs.
+    let basePrompt = `You are an expert prompt engineer specializing in creating detailed and optimized prompts for generating scene images based on user inputs. The final prompt must be at least 3000 characters long.
 
 If the user has provided specific parameters (style, camera, etc.), use them. If not, choose suitable options yourself based on the general description.
 `;
@@ -71,11 +81,11 @@ ${jsonPromptInstructions}`;
     const finalPrompt = `${basePrompt}
 
 Scene Description: ${input.sceneDescription}
-${input.artStyle ? `Art Style: ${input.artStyle}` : ''}
-${input.cameraAngle ? `Camera Angle: ${input.cameraAngle}` : ''}
-${input.lightingStyle ? `Lighting Style: ${input.lightingStyle}` : ''}
-${input.camera ? `Camera: ${input.camera}` : ''}
-${input.filmType ? `Film Type: ${input.filmType}` : ''}
+${input.artStyle && input.artStyle !== 'none' ? `Art Style: ${input.artStyle}` : ''}
+${input.cameraAngle && input.cameraAngle !== 'none' ? `Camera Angle: ${input.cameraAngle}` : ''}
+${input.lightingStyle && input.lightingStyle !== 'none' ? `Lighting Style: ${input.lightingStyle}` : ''}
+${input.camera && input.camera !== 'none' ? `Camera: ${input.camera}` : ''}
+${input.filmType && input.filmType !== 'none' ? `Film Type: ${input.filmType}` : ''}
 `;
 
     const prompt = ai.definePrompt({
@@ -89,3 +99,5 @@ ${input.filmType ? `Film Type: ${input.filmType}` : ''}
     return output!;
   }
 );
+
+    

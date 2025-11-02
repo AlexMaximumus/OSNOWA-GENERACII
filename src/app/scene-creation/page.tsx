@@ -200,7 +200,7 @@ ${selectedCharacter.appearanceDescription}
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                           <SelectItem value="">None</SelectItem>
+                           <SelectItem value="none">None</SelectItem>
                           {photoStyles.map((style) => (
                             <SelectItem key={style} value={style}>{style}</SelectItem>
                           ))}
@@ -223,7 +223,7 @@ ${selectedCharacter.appearanceDescription}
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                           <SelectItem value="">None</SelectItem>
+                           <SelectItem value="none">None</SelectItem>
                           {cameraAngles.map((angle) => (
                             <SelectItem key={angle} value={angle}>{angle}</SelectItem>
                           ))}
@@ -246,7 +246,7 @@ ${selectedCharacter.appearanceDescription}
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                           <SelectItem value="">None</SelectItem>
+                           <SelectItem value="none">None</SelectItem>
                           {lightingStyles.map((style) => (
                             <SelectItem key={style} value={style}>{style}</SelectItem>
                           ))}
@@ -269,7 +269,7 @@ ${selectedCharacter.appearanceDescription}
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                           <SelectItem value="">None</SelectItem>
+                           <SelectItem value="none">None</SelectItem>
                           {cameras.map((camera) => (
                             <SelectItem key={camera} value={camera}>{camera}</SelectItem>
                           ))}
@@ -289,10 +289,10 @@ ${selectedCharacter.appearanceDescription}
                         <FormControl>
                           <SelectTrigger>
                             <SelectValue placeholder="Select a film type" />
-                          </SelectTrigger>
+                          </Trigger>
                         </FormControl>
                         <SelectContent>
-                           <SelectItem value="">None</SelectItem>
+                           <SelectItem value="none">None</SelectItem>
                           {filmTypes.map((film) => (
                             <SelectItem key={film} value={film}>{film}</SelectItem>
                           ))}
@@ -348,3 +348,5 @@ ${selectedCharacter.appearanceDescription}
     </div>
   );
 }
+
+    
