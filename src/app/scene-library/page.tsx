@@ -5,20 +5,38 @@ import { useLocalStorage } from '@/hooks/use-local-storage';
 import { Scene } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { MountainSnow, Trash2 } from 'lucide-react';
+import { Copy, MountainSnow, Trash2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
 
 function SceneCard({ scene, onDelete }: { scene: Scene, onDelete: (id: string) => void }) {
+    const { toast } = useToast();
+
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text).then(() => {
+        toast({
+            title: 'Copied prompt to clipboard!',
+        });
+        });
+    };
+
   return (
     <Card className="flex flex-col">
       <CardHeader>
-        <CardTitle className="font-headline line-clamp-1">Style: {scene.artStyle}</CardTitle>
-        <CardDescription>
-          {scene.cameraAngle}, {scene.lightingStyle} lighting
-        </CardDescription>
+        <div className='flex justify-between items-start'>
+            <div>
+                <CardTitle className="font-headline line-clamp-1">Style: {scene.artStyle || 'N/A'}</CardTitle>
+                <CardDescription>
+                {scene.cameraAngle || 'N/A'}, {scene.lightingStyle || 'N/A'} lighting
+                </CardDescription>
+            </div>
+            <Button variant="ghost" size="icon" onClick={() => copyToClipboard(scene.prompt)}>
+                <Copy className="h-4 w-4" />
+                <span className="sr-only">Copy Prompt</span>
+            </Button>
+        </div>
       </CardHeader>
       <CardContent className="flex-grow">
         <p className="text-sm text-muted-foreground line-clamp-4">{scene.prompt}</p>

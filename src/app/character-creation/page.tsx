@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Save } from 'lucide-react';
+import { Copy, Loader2, Save } from 'lucide-react';
 import { generateCharacterPrompt } from '@/ai/flows/generate-character-prompt';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,6 +46,14 @@ export default function CharacterCreationPage() {
       promptType: 'artistic',
     },
   });
+  
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast({
+        title: 'Copied to clipboard!',
+      });
+    });
+  };
 
   async function onSubmit(data: CharacterFormData) {
     setIsLoading(true);
@@ -281,9 +289,17 @@ export default function CharacterCreationPage() {
         </Card>
 
         <Card className="sticky top-8">
-          <CardHeader>
-            <CardTitle>Generated Prompt</CardTitle>
-            <CardDescription>Your AI-generated prompt will appear here.</CardDescription>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <div>
+                <CardTitle>Generated Prompt</CardTitle>
+                <CardDescription>Your AI-generated prompt will appear here.</CardDescription>
+            </div>
+            {generatedData && (
+              <Button variant="ghost" size="icon" onClick={() => copyToClipboard(generatedData.prompt)}>
+                <Copy className="h-4 w-4" />
+                <span className="sr-only">Copy Prompt</span>
+              </Button>
+            )}
           </CardHeader>
           <CardContent className="min-h-[300px]">
             {isLoading ? (

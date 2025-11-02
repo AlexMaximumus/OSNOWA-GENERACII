@@ -5,7 +5,7 @@ import { useLocalStorage } from '@/hooks/use-local-storage';
 import { Character } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Trash2, UserPlus } from 'lucide-react';
+import { Copy, Trash2, UserPlus } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
 import { formatDistanceToNow } from 'date-fns';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -13,6 +13,16 @@ import Link from 'next/link';
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '@/components/ui/accordion';
 
 function CharacterCard({ character, onDelete }: { character: Character, onDelete: (id: string) => void }) {
+  const { toast } = useToast();
+
+  const copyToClipboard = (text: string, type: string) => {
+    navigator.clipboard.writeText(text).then(() => {
+      toast({
+        title: `Copied ${type} to clipboard!`,
+      });
+    });
+  };
+
   return (
     <Card className="flex flex-col">
       <CardHeader>
@@ -26,13 +36,33 @@ function CharacterCard({ character, onDelete }: { character: Character, onDelete
           <AccordionItem value="appearance">
             <AccordionTrigger>Appearance</AccordionTrigger>
             <AccordionContent>
-              <p className="text-sm text-muted-foreground">{character.appearanceDescription}</p>
+              <div className="relative">
+                <p className="text-sm text-muted-foreground pr-10">{character.appearanceDescription}</p>
+                 <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-0 right-0 h-8 w-8"
+                  onClick={() => copyToClipboard(character.appearanceDescription, 'Appearance')}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="prompt">
             <AccordionTrigger>Generated Prompt</AccordionTrigger>
             <AccordionContent>
-               <p className="text-sm text-muted-foreground whitespace-pre-wrap">{character.prompt}</p>
+              <div className="relative">
+                 <p className="text-sm text-muted-foreground whitespace-pre-wrap pr-10">{character.prompt}</p>
+                 <Button
+                  variant="ghost"
+                  size="icon"
+                  className="absolute top-0 right-0 h-8 w-8"
+                  onClick={() => copyToClipboard(character.prompt, 'Prompt')}
+                >
+                  <Copy className="h-4 w-4" />
+                </Button>
+              </div>
             </AccordionContent>
           </AccordionItem>
         </Accordion>
