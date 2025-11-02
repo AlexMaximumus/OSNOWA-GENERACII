@@ -47,7 +47,7 @@ export default function CharacterCreationPage() {
       creationType: 'inScene',
     },
   });
-  
+
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
       toast({
