@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Copy, Loader2, Save, Wand, RefreshCw } from 'lucide-react';
@@ -12,7 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Textarea } from '@/components/ui/textarea';
 import { useToast } from '@/hooks/use-toast';
 import { useLocalStorage } from '@/hooks/use-local-storage';
-import { Scene, SceneFormData, SceneFormSchema } from '@/lib/types';
+import { Scene, SceneFormData, SceneFormSchema, Character } from '@/lib/types';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { photoStyles } from '@/lib/photo-styles';
@@ -33,11 +33,14 @@ export default function SceneCreationPage() {
 
   const { toast } = useToast();
   const [scenes, setScenes] = useLocalStorage<Scene[]>('scenes', []);
+  const [characters] = useLocalStorage<Character[]>('characters', []);
+
 
   const form = useForm<SceneFormData>({
     resolver: zodResolver(SceneFormSchema),
     defaultValues: {
       sceneDescription: '',
+      characterId: 'none',
       artStyle: 'none',
       cameraAngle: 'none',
       lightingStyle: 'none',
@@ -55,12 +58,24 @@ export default function SceneCreationPage() {
     });
   };
 
+  const getCharacterInfo = useCallback((characterId?: string) => {
+    if (!characterId || characterId === 'none') {
+        return undefined;
+    }
+    const character = characters.find(c => c.id === characterId);
+    if (!character) {
+        return undefined;
+    }
+    return `Appearance: ${character.appearanceDescription}\nPrompt Details: ${character.prompt}`;
+  }, [characters]);
+
   async function onSubmit(data: SceneFormData) {
     setIsLoading(true);
     setGeneratedData(null);
     setLastGeneratedScene(null);
     try {
-      const result = await generateScenePrompt(data);
+      const characterInfo = getCharacterInfo(data.characterId);
+      const result = await generateScenePrompt({...data, characterInfo});
       if (result.prompt) {
         setGeneratedData({
             prompt: result.prompt,
@@ -85,14 +100,16 @@ export default function SceneCreationPage() {
     }
   }
 
-  async function handleRegenerate(data: SceneFormData) {
+  const handleRegenerate = useCallback(async (data: SceneFormData) => {
     if (!lastGeneratedScene?.sceneDescription) return;
 
     setIsRegenerating(true);
     try {
+      const characterInfo = getCharacterInfo(data.characterId);
       const result = await regenerateScenePrompt({
         ...data,
         sceneDescription: lastGeneratedScene.sceneDescription, // Use original description
+        characterInfo,
       });
 
       if (result.prompt) {
@@ -115,7 +132,8 @@ export default function SceneCreationPage() {
     } finally {
       setIsRegenerating(false);
     }
-  }
+  }, [lastGeneratedScene, toast, getCharacterInfo]);
+
 
   function saveScene() {
     if (!generatedData || !lastGeneratedScene) return;
@@ -170,6 +188,30 @@ export default function SceneCreationPage() {
                           disabled={!!generatedData}
                         />
                       </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                
+                <FormField
+                  control={form.control}
+                  name="characterId"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Add Character (Optional)</FormLabel>
+                       <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
+                        <FormControl>
+                          <SelectTrigger>
+                            <SelectValue placeholder="Select a character" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          <SelectItem value="none">None</SelectItem>
+                          {characters.map((character) => (
+                            <SelectItem key={character.id} value={character.id}>{character.name}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
                       <FormMessage />
                     </FormItem>
                   )}

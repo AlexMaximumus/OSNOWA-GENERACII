@@ -28,6 +28,7 @@ const GenerateScenePromptInputSchema = z.object({
   sceneDescription: z
     .string()
     .describe('Detailed description of the scene including environment, time of day, and mood.'),
+  characterInfo: z.string().optional().describe("A string containing the full appearance description and prompt for a character to be included in the scene."),
   artStyle: z
     .string()
     .optional()
@@ -65,6 +66,8 @@ const generateScenePromptFlow = ai.defineFlow(
     
     let basePrompt = `You are an expert prompt engineer specializing in creating detailed and optimized prompts for generating scene images based on user inputs. The final prompt must be at least 3000 characters long.
 
+If a character description is provided, you MUST seamlessly integrate it into the main scene description. The character should be the central focus of the scene.
+
 If the user has provided specific parameters (style, camera, etc.), use them. If not, choose suitable options yourself based on the general description.
 `;
   
@@ -78,9 +81,13 @@ You must generate a JSON prompt. Fill in the JSON structure based on the descrip
 ${jsonPromptInstructions}`;
     }
 
+    const fullSceneDescription = input.characterInfo 
+      ? `Character to include in scene: ${input.characterInfo}\n\nScene Description: ${input.sceneDescription}`
+      : `Scene Description: ${input.sceneDescription}`;
+
     const finalPrompt = `${basePrompt}
 
-Scene Description: ${input.sceneDescription}
+${fullSceneDescription}
 ${input.artStyle && input.artStyle !== 'none' ? `Art Style: ${input.artStyle}` : ''}
 ${input.cameraAngle && input.cameraAngle !== 'none' ? `Camera Angle: ${input.cameraAngle}` : ''}
 ${input.lightingStyle && input.lightingStyle !== 'none' ? `Lighting Style: ${input.lightingStyle}` : ''}
@@ -99,5 +106,3 @@ ${input.filmType && input.filmType !== 'none' ? `Film Type: ${input.filmType}` :
     return output!;
   }
 );
-
-    

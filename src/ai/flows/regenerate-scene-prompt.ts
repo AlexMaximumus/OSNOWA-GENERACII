@@ -18,6 +18,7 @@ const RegenerateScenePromptInputSchema = z.object({
   sceneDescription: z
     .string()
     .describe('The original detailed description of the scene.'),
+  characterInfo: z.string().optional().describe("A string containing the full appearance description and prompt for a character to be included in the scene."),
   artStyle: z
     .string()
     .optional()
@@ -58,6 +59,8 @@ const regenerateScenePromptFlow = ai.defineFlow(
 
 You must use the original scene description as the core creative brief, but apply the NEWLY provided parameters (art style, camera, etc.) to it.
 
+If a character description is provided, you MUST seamlessly integrate it into the main scene description. The character should be the central focus of the scene.
+
 If a new parameter is provided, it OVERRIDES any previous setting for that parameter. If a new parameter is not provided or set to 'none', you should choose a suitable option yourself based on the original description.
 `;
 
@@ -71,9 +74,14 @@ You must generate a JSON prompt. Fill in the JSON structure based on the descrip
 ${jsonPromptInstructions}`;
     }
 
+    const fullSceneDescription = input.characterInfo 
+      ? `Character to include in scene: ${input.characterInfo}\n\nOriginal Scene Description: ${input.sceneDescription}`
+      : `Original Scene Description: ${input.sceneDescription}`;
+
+
     const finalPrompt = `${basePrompt}
 
-Original Scene Description: ${input.sceneDescription}
+${fullSceneDescription}
 
 Apply these NEW parameters:
 ${input.artStyle && input.artStyle !== 'none' ? `New Art Style: ${input.artStyle}` : ''}
