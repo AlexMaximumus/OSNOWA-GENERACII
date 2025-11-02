@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect, Suspense } from 'react';
@@ -34,7 +35,7 @@ function SceneCreationForm() {
   const { toast } = useToast();
   const [scenes, setScenes] = useLocalStorage<Scene[]>('scenes', []);
   const [characters] = useLocalStorage<Character[]>('characters', []);
-  const [outfits] = useLocalStorage<Outfit[]>('outfits', []);
+  const [outfits, setOutfits] = useLocalStorage<Outfit[]>('outfits', []);
   const [locations] = useLocalStorage<Location[]>('locations', []);
   const { favoriteSettings, saveFavoriteSettings, resetFavoriteSettings } = useFavoriteSettings();
   
@@ -314,7 +315,7 @@ function SceneCreationForm() {
                         <Textarea 
                           rows={8}
                           placeholder={
-                            selectedLocationId !== 'none'
+                            selectedLocationId && selectedLocationId !== 'none'
                               ? "Add specific details for this scene (e.g., character actions, time of day, specific mood). The base location details will be included automatically."
                               : "e.g., A quiet, rain-slicked alley in Shinjuku at midnight, illuminated by a single flickering neon sign. A sense of loneliness and mystery."
                           } 
@@ -620,5 +621,7 @@ export default function SceneCreationPage() {
         </Suspense>
     )
 }
+
+    
 
     
