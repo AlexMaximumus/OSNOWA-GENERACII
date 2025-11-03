@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -10,7 +11,7 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {generateContent} from 'genkit/ai';
+import {generateContent} from 'genkit';
 
 const AnalyzeImagePromptInputSchema = z.object({
   referenceImage: z
