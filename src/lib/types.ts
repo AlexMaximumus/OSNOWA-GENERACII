@@ -31,6 +31,7 @@ export type Character = CharacterFormData & {
 // For form validation
 export const SceneFormSchema = z.object({
   sceneDescription: z.string().optional(),
+  adjustments: z.string().optional(),
   characterId: z.string().optional(),
   outfitId: z.string().optional(),
   locationId: z.string().optional(),

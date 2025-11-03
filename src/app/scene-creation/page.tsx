@@ -50,6 +50,7 @@ function SceneCreationForm() {
     resolver: zodResolver(SceneFormSchema),
     defaultValues: {
       sceneDescription: '',
+      adjustments: '',
       characterId: 'none',
       outfitId: 'none',
       locationId: 'none',
@@ -67,11 +68,10 @@ function SceneCreationForm() {
     try {
       const result = await analyzeImagePrompt({ referenceImage: image });
       if (result.imageDescription) {
-        const currentDescription = form.getValues('sceneDescription');
-        form.setValue('sceneDescription', (currentDescription ? currentDescription + '\n\n' : '') + result.imageDescription);
+        form.setValue('sceneDescription', result.imageDescription);
         toast({
           title: 'Image Analyzed',
-          description: 'A description has been generated from your image.',
+          description: 'A description has been generated from your image and placed in the description field.',
         });
       }
     } catch (error) {
@@ -288,6 +288,7 @@ function SceneCreationForm() {
     if (sceneId === 'none') {
       form.reset({
         sceneDescription: '',
+        adjustments: '',
         characterId: 'none',
         outfitId: 'none',
         locationId: 'none',
@@ -417,15 +418,11 @@ function SceneCreationForm() {
                     name="sceneDescription"
                     render={({ field }) => (
                       <FormItem>
-                        <FormLabel>Scene Description</FormLabel>
+                        <FormLabel>Scene Description (from Image)</FormLabel>
                         <FormControl>
                           <Textarea 
-                            rows={8}
-                            placeholder={
-                              selectedLocationId && selectedLocationId !== 'none'
-                                ? "Add specific details for this scene (e.g., character actions, time of day, specific mood). The base location details will be included automatically."
-                                : "e.g., A quiet, rain-slicked alley in Shinjuku at midnight, illuminated by a single flickering neon sign. A sense of loneliness and mystery."
-                            } 
+                            rows={6}
+                            placeholder="This will be auto-filled when you paste an image."
                             {...field}
                           />
                         </FormControl>
@@ -433,6 +430,28 @@ function SceneCreationForm() {
                       </FormItem>
                     )}
                   />
+                  
+                  <FormField
+                    control={form.control}
+                    name="adjustments"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Adjustments</FormLabel>
+                        <FormControl>
+                          <Textarea 
+                            rows={4}
+                            placeholder="e.g., Change the season to winter. Make the lighting more dramatic. Add rain."
+                            {...field}
+                          />
+                        </FormControl>
+                         <FormDescription>
+                          Describe any changes you want to make to the scene from the reference image.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
                   <FormField
                     control={form.control}
                     name="characterId"

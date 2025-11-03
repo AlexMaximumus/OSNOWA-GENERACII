@@ -20,6 +20,7 @@ const GenerateScenePromptInputSchema = z.object({
     .string()
     .optional()
     .describe('Detailed description of the scene including environment, time of day, and mood. This may contain a pre-analyzed description from a reference image.'),
+  adjustments: z.string().optional().describe('User-provided modifications to apply to the scene description.'),
   characterInfo: z.string().optional().describe("A string containing the full, consistent, and detailed visual appearance description and prompt for a character. This MUST NOT contain a name."),
   referenceImage: z.string().optional().describe("This is for context but the main prompt logic should rely on sceneDescription which might be derived from this image."),
   artStyle: z
@@ -59,15 +60,13 @@ const generateScenePromptFlow = ai.defineFlow(
     
     let basePrompt = `You are an expert prompt engineer specializing in creating detailed and optimized prompts for generating scene images based on user inputs. The final prompt must be at least 3000 characters long.
 
-The user has provided a scene description. This description might be derived from a reference image they provided, capturing its composition, pose, and mood. Your task is to enhance this description and synthesize it with any other details provided.
+Your primary task is to synthesize multiple pieces of information into a single, cohesive, and extremely detailed prompt.
 
-CRITICAL RULE: If the scene description contains details about composition, pose, and camera angles (likely from an analyzed image), you MUST treat those as the structural blueprint for the final prompt. Your job is to flesh out this blueprint, integrating the specified character, location, and stylistic choices into a cohesive whole.
-
-If a character description ('characterInfo') is provided, you MUST seamlessly integrate it into the main scene description. This 'characterInfo' contains a pre-made, detailed visual description and should be used as-is to ensure consistency. The character should be the central focus of the scene. Do NOT use a character name, only the visual description provided.
-
-If the description includes a base location prompt and additional details, you must synthesize them. Use the base location prompt as the foundation and expertly weave the additional scene details into it to create a single, cohesive, and extremely detailed final prompt.
-
-If the user has provided specific parameters (style, camera, etc.), use them. If not, choose suitable options yourself based on the general description.
+1.  **Base Description**: You will receive a 'sceneDescription', which is often automatically generated from a reference image. This description is the foundational blueprint of the scene's composition, pose, and mood. You MUST treat it as the primary source of truth for the scene's structure.
+2.  **Adjustments**: You will also receive 'adjustments'. These are the user's explicit instructions on how to modify the 'sceneDescription'. You must apply these adjustments to the base description. For example, if the base description says "sunny day" and the adjustments say "change to a rainy night", the final prompt must describe a rainy night.
+3.  **Character Integration**: If a character description ('characterInfo') is provided, you MUST seamlessly integrate it into the modified scene description. This 'characterInfo' contains a pre-made, detailed visual description and should be used as-is to ensure consistency. The character should be the central focus of the scene. Do NOT use a character name, only the visual description provided.
+4.  **Location Synthesis**: If the description includes a base location prompt and additional details, you must synthesize them. Use the base location prompt as the foundation and expertly weave the additional scene details and adjustments into it.
+5.  **Stylistic Parameters**: If the user has provided specific parameters (art style, camera, etc.), you must use them. If a parameter is not provided or set to 'none', you must choose a suitable option yourself based on the overall description.
 `;
   
     if (input.promptType === 'artistic') {
@@ -86,7 +85,8 @@ ${jsonPromptInstructions}`;
 
     const finalPrompt = `${basePrompt}
 
-${fullSceneDescription}
+Base Scene: ${fullSceneDescription}
+Adjustments to apply: ${input.adjustments || 'None'}
 ${input.artStyle && input.artStyle !== 'none' ? `Art Style: ${input.artStyle}` : ''}
 ${input.cameraAngle && input.cameraAngle !== 'none' ? `Camera Angle: ${input.cameraAngle}` : ''}
 ${input.lightingStyle && input.lightingStyle !== 'none' ? `Lighting Style: ${input.lightingStyle}` : ''}
