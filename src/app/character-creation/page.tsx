@@ -414,7 +414,12 @@ export default function CharacterCreationPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : generatedData ? (
-              <Textarea readOnly value={generatedData.prompt} className="h-full min-h-[300px] text-base" />
+              <Textarea 
+                readOnly 
+                value={generatedData.prompt} 
+                className="h-full min-h-[300px] text-base cursor-copy"
+                onClick={() => copyToClipboard(generatedData.prompt)}
+              />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
                 Your prompt is waiting to be created...

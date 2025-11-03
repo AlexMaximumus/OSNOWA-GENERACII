@@ -763,7 +763,12 @@ function SceneCreationForm() {
                    {isAnalyzing && <p className="ml-2">Analyzing image...</p>}
                 </div>
               ) : generatedPrompt ? (
-                <Textarea readOnly value={generatedPrompt} className="h-full min-h-[400px] text-base" />
+                <Textarea 
+                  readOnly 
+                  value={generatedPrompt} 
+                  className="h-full min-h-[400px] text-base cursor-copy"
+                  onClick={() => copyToClipboard(generatedPrompt)}
+                />
               ) : (
                 <div className="flex items-center justify-center h-full text-muted-foreground">
                   Your prompt is waiting to be created...

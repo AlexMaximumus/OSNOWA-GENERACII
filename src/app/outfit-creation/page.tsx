@@ -153,7 +153,12 @@ export default function OutfitCreationPage() {
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
             ) : generatedData ? (
-              <Textarea readOnly value={generatedData.description} className="h-full min-h-[400px] text-base" />
+              <Textarea 
+                readOnly 
+                value={generatedData.description} 
+                className="h-full min-h-[400px] text-base cursor-copy"
+                onClick={() => copyToClipboard(generatedData.description)}
+               />
             ) : (
               <div className="flex items-center justify-center h-full text-muted-foreground">
                 Your outfit description is waiting to be designed...
