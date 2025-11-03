@@ -53,7 +53,7 @@ function SceneCreationForm() {
       sceneDescription: '',
       adjustments: '',
       characterId: 'none',
-      nationality: 'Young Japanese woman',
+      nationality: 'none',
       outfitId: 'none',
       locationId: 'none',
       artStyle: favoriteSettings.artStyle,
@@ -126,7 +126,7 @@ function SceneCreationForm() {
     form.reset({
       ...scene,
       characterId: scene.characterId || 'none',
-      nationality: scene.nationality || 'Young Japanese woman',
+      nationality: scene.nationality || 'none',
       outfitId: scene.outfitId || 'none',
       locationId: scene.locationId || 'none',
     });
@@ -213,9 +213,10 @@ function SceneCreationForm() {
       if (characterInfo) {
         promptInput.characterInfo = characterInfo;
         delete promptInput.nationality; // Don't send nationality if a character is selected
-      } else {
+      } else if (data.nationality && data.nationality !== 'none') {
         promptInput.nationality = data.nationality;
-        delete promptInput.characterInfo;
+      } else {
+        delete promptInput.nationality;
       }
 
 
@@ -301,7 +302,7 @@ function SceneCreationForm() {
         sceneDescription: '',
         adjustments: '',
         characterId: 'none',
-        nationality: 'Young Japanese woman',
+        nationality: 'none',
         outfitId: 'none',
         locationId: 'none',
         artStyle: favoriteSettings.artStyle,
@@ -340,7 +341,7 @@ function SceneCreationForm() {
           }}
         />
       )}
-       <div className="container mx-auto p-4 md:p-8">
+      <div className="container mx-auto p-4 md:p-8">
         <h1 className="text-3xl font-headline font-bold mb-6">{editingScene ? 'Edit Scene' : 'Create New Scene'}</h1>
         <div className="grid md:grid-cols-2 gap-8 items-start">
           <Card>
@@ -511,9 +512,10 @@ function SceneCreationForm() {
                               </SelectTrigger>
                               </FormControl>
                               <SelectContent>
-                              {nationalities.map((nat) => (
-                                  <SelectItem key={nat} value={nat}>{nat}</SelectItem>
-                              ))}
+                                <SelectItem value="none">No Character</SelectItem>
+                                {nationalities.map((nat) => (
+                                    <SelectItem key={nat} value={nat}>{nat}</SelectItem>
+                                ))}
                               </SelectContent>
                           </Select>
                            <FormDescription>

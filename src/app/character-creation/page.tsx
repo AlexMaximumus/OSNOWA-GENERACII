@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState, useEffect } from 'react';
@@ -46,7 +47,7 @@ export default function CharacterCreationPage() {
     resolver: zodResolver(CharacterFormSchema),
     defaultValues: {
       description: '',
-      nationality: 'Young Japanese woman',
+      nationality: 'none',
       artStyle: favoriteSettings.artStyle,
       cameraAngle: favoriteSettings.cameraAngle,
       lightingStyle: favoriteSettings.lightingStyle,
@@ -62,7 +63,7 @@ export default function CharacterCreationPage() {
       form.reset({
         ...form.getValues(),
         ...favoriteSettings,
-        nationality: form.getValues().nationality || 'Young Japanese woman',
+        nationality: form.getValues().nationality || 'none',
       });
     }
   }, [isClient, favoriteSettings, form]);
@@ -197,6 +198,7 @@ export default function CharacterCreationPage() {
                             </SelectTrigger>
                             </FormControl>
                             <SelectContent>
+                            <SelectItem value="none">Not specified</SelectItem>
                             {nationalities.map((nat) => (
                                 <SelectItem key={nat} value={nat}>{nat}</SelectItem>
                             ))}
