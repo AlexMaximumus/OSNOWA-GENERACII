@@ -22,6 +22,7 @@ const GenerateScenePromptInputSchema = z.object({
     .describe('Detailed description of the scene including environment, time of day, and mood. This may contain a pre-analyzed description from a reference image.'),
   adjustments: z.string().optional().describe('User-provided modifications to apply to the scene description.'),
   characterInfo: z.string().optional().describe("A string containing the full, consistent, and detailed visual appearance description and prompt for a character. This MUST NOT contain a name."),
+  nationality: z.string().optional().describe("The nationality/gender of a temporary character if no character is selected from the library."),
   referenceImage: z.string().optional().describe("This is for context but the main prompt logic should rely on sceneDescription which might be derived from this image."),
   artStyle: z
     .string()
@@ -62,9 +63,11 @@ const generateScenePromptFlow = ai.defineFlow(
 
 Your primary task is to synthesize multiple pieces of information into a single, cohesive, and extremely detailed prompt.
 
-1.  **Base Description**: You will receive a 'sceneDescription', which is often automatically generated from a reference image. This description is the foundational blueprint of the scene's composition, pose, and mood. You MUST treat it as the primary source of truth for the scene's structure.
-2.  **Adjustments**: You will also receive 'adjustments'. These are the user's explicit instructions on how to modify the 'sceneDescription'. You must apply these adjustments to the base description. For example, if the base description says "sunny day" and the adjustments say "change to a rainy night", the final prompt must describe a rainy night.
-3.  **Character Integration**: If a character description ('characterInfo') is provided, you MUST seamlessly integrate it into the modified scene description. This 'characterInfo' contains a pre-made, detailed visual description and should be used as-is to ensure consistency. The character should be the central focus of the scene. Do NOT use a character name, only the visual description provided.
+1.  **Base Description**: You will receive a 'sceneDescription', which is often automatically generated from a reference image. This is the foundational blueprint of the scene's composition, pose, and mood. You MUST treat it as the primary source of truth for the scene's structure.
+2.  **Adjustments**: You will receive 'adjustments'. These are the user's explicit instructions on how to modify the 'sceneDescription'. You must apply these adjustments to the base description. For example, if the base description says "sunny day" and the adjustments say "change to a rainy night", the final prompt must describe a rainy night.
+3.  **Character Integration**: 
+    - If a 'characterInfo' (a pre-defined character from the library) is provided, you MUST seamlessly integrate it into the modified scene description. This 'characterInfo' contains a pre-made, detailed visual description and should be used as-is to ensure consistency.
+    - If 'characterInfo' is NOT provided, but a 'nationality' is, you must generate a new character for the scene based on that nationality and the scene context. The character should be the central focus.
 4.  **Location Synthesis**: If the description includes a base location prompt and additional details, you must synthesize them. Use the base location prompt as the foundation and expertly weave the additional scene details and adjustments into it.
 5.  **Stylistic Parameters**: If the user has provided specific parameters (art style, camera, etc.), you must use them. If a parameter is not provided or set to 'none', you must choose a suitable option yourself based on the overall description.
 `;
@@ -79,9 +82,13 @@ You must generate a JSON prompt. Fill in the JSON structure based on the descrip
 ${jsonPromptInstructions}`;
     }
 
-    const fullSceneDescription = input.characterInfo 
-      ? `Visual Character Description to include in scene: ${input.characterInfo}\n\nScene Description: ${input.sceneDescription || ''}`
-      : `Scene Description: ${input.sceneDescription || ''}`;
+    let fullSceneDescription = `Scene Description: ${input.sceneDescription || ''}`;
+    if (input.characterInfo) {
+      fullSceneDescription = `Visual Character Description to include in scene: ${input.characterInfo}\n\n${fullSceneDescription}`;
+    } else if (input.nationality) {
+      fullSceneDescription = `Nationality for a new character to generate for the scene: ${input.nationality}\n\n${fullSceneDescription}`;
+    }
+
 
     const finalPrompt = `${basePrompt}
 

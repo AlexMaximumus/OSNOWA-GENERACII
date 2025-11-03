@@ -34,6 +34,7 @@ export const SceneFormSchema = z.object({
   sceneDescription: z.string().optional(),
   adjustments: z.string().optional(),
   characterId: z.string().optional(),
+  nationality: z.string().optional(),
   outfitId: z.string().optional(),
   locationId: z.string().optional(),
   artStyle: z.string().optional().default(''),

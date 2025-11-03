@@ -26,6 +26,7 @@ import { useSearchParams } from 'next/navigation';
 import { useFavoriteSettings } from '@/hooks/use-favorite-settings';
 import { useCompletionVFX } from '@/hooks/use-completion-vfx';
 import Image from 'next/image';
+import { nationalities } from '@/lib/nationalities';
 
 function SceneCreationForm() {
   const searchParams = useSearchParams();
@@ -52,6 +53,7 @@ function SceneCreationForm() {
       sceneDescription: '',
       adjustments: '',
       characterId: 'none',
+      nationality: 'Young Japanese woman',
       outfitId: 'none',
       locationId: 'none',
       artStyle: favoriteSettings.artStyle,
@@ -124,6 +126,7 @@ function SceneCreationForm() {
     form.reset({
       ...scene,
       characterId: scene.characterId || 'none',
+      nationality: scene.nationality || 'Young Japanese woman',
       outfitId: scene.outfitId || 'none',
       locationId: scene.locationId || 'none',
     });
@@ -201,12 +204,20 @@ function SceneCreationForm() {
       const sceneInfo = getLocationInfo(data);
       
       let result;
-      const promptInput = {
+      const promptInput: any = { // Use 'any' to dynamically build the object
           ...data,
           sceneDescription: sceneInfo,
-          characterInfo,
           referenceImage: referenceImage || undefined,
       };
+
+      if (characterInfo) {
+        promptInput.characterInfo = characterInfo;
+        delete promptInput.nationality; // Don't send nationality if a character is selected
+      } else {
+        promptInput.nationality = data.nationality;
+        delete promptInput.characterInfo;
+      }
+
 
       if (isRegen) {
          result = await regenerateScenePrompt(promptInput);
@@ -282,7 +293,7 @@ function SceneCreationForm() {
   
   const currentPromptType = form.watch('promptType');
   const isArtisticPrompt = currentPromptType === 'artistic';
-  const selectedLocationId = form.watch('locationId');
+  const selectedCharacterId = form.watch('characterId');
 
   const handleSceneSelect = (sceneId: string) => {
     if (sceneId === 'none') {
@@ -290,6 +301,7 @@ function SceneCreationForm() {
         sceneDescription: '',
         adjustments: '',
         characterId: 'none',
+        nationality: 'Young Japanese woman',
         outfitId: 'none',
         locationId: 'none',
         artStyle: favoriteSettings.artStyle,
@@ -484,6 +496,35 @@ function SceneCreationForm() {
                       </FormItem>
                     )}
                   />
+
+                  {(!selectedCharacterId || selectedCharacterId === 'none') && (
+                    <FormField
+                      control={form.control}
+                      name="nationality"
+                      render={({ field }) => (
+                          <FormItem>
+                          <FormLabel>Nationality & Gender</FormLabel>
+                          <Select onValueChange={field.onChange} value={field.value}>
+                              <FormControl>
+                              <SelectTrigger>
+                                  <SelectValue placeholder="Select a nationality for a new character" />
+                              </SelectTrigger>
+                              </FormControl>
+                              <SelectContent>
+                              {nationalities.map((nat) => (
+                                  <SelectItem key={nat} value={nat}>{nat}</SelectItem>
+                              ))}
+                              </SelectContent>
+                          </Select>
+                           <FormDescription>
+                            Used if no character is selected from the library.
+                          </FormDescription>
+                          <FormMessage />
+                          </FormItem>
+                      )}
+                      />
+                  )}
+
 
                   {form.watch('characterId') && form.watch('characterId') !== 'none' && (
                       <FormField
