@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -17,6 +18,7 @@ import { jsonPromptInstructions } from '@/lib/json-prompt-instructions';
 const RegenerateScenePromptInputSchema = z.object({
   sceneDescription: z
     .string()
+    .optional()
     .describe('The original detailed description of the scene.'),
   characterInfo: z.string().optional().describe("A string containing the full appearance description and prompt for a character to be included in the scene."),
   referenceImage: z.string().optional().describe("A data URI of a reference image. Analyze this image and use it as the primary visual guide for the scene's composition, style, and mood, but replace elements as described in the text prompt."),
@@ -78,8 +80,8 @@ ${jsonPromptInstructions}`;
     }
 
     const fullSceneDescription = input.characterInfo 
-      ? `Character to include in scene: ${input.characterInfo}\n\nOriginal Scene Description: ${input.sceneDescription}`
-      : `Original Scene Description: ${input.sceneDescription}`;
+      ? `Character to include in scene: ${input.characterInfo}\n\nOriginal Scene Description: ${input.sceneDescription || ''}`
+      : `Original Scene Description: ${input.sceneDescription || ''}`;
 
 
     const finalPrompt = `${basePrompt}
@@ -94,16 +96,14 @@ ${input.camera && input.camera !== 'none' ? `New Camera: ${input.camera}` : ''}
 ${input.filmType && input.filmType !== 'none' ? `New Film Type: ${input.filmType}` : ''}
 `;
 
-    const model = input.referenceImage ? 'gemini-2.5-flash-image-preview' : 'gemini-2.5-flash';
+    const modelName = input.referenceImage ? 'gemini-2.5-flash-image-preview' : 'gemini-2.5-flash';
 
     const prompt = ai.definePrompt({
         name: 'regenerateScenePrompt',
         input: {schema: RegenerateScenePromptInputSchema},
         output: {schema: RegenerateScenePromptOutputSchema},
         prompt: finalPrompt,
-        config: {
-            model: `googleai/${model}`
-        }
+        model: `googleai/${modelName}`
     });
     
     const {output} = await prompt(input.referenceImage ? {

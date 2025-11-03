@@ -1,3 +1,4 @@
+
 'use server';
 
 /**
@@ -17,6 +18,7 @@ import { jsonPromptInstructions } from '@/lib/json-prompt-instructions';
 const GenerateScenePromptInputSchema = z.object({
   sceneDescription: z
     .string()
+    .optional()
     .describe('Detailed description of the scene including environment, time of day, and mood.'),
   characterInfo: z.string().optional().describe("A string containing the full, consistent, and detailed visual appearance description and prompt for a character. This MUST NOT contain a name."),
   referenceImage: z.string().optional().describe("A data URI of a reference image. Analyze this image and use it as the primary visual guide for the scene's composition, style, and mood, but replace elements as described in the text prompt."),
@@ -77,8 +79,8 @@ ${jsonPromptInstructions}`;
     }
 
     const fullSceneDescription = input.characterInfo 
-      ? `Visual Character Description to include in scene: ${input.characterInfo}\n\nScene Description: ${input.sceneDescription}`
-      : `Scene Description: ${input.sceneDescription}`;
+      ? `Visual Character Description to include in scene: ${input.characterInfo}\n\nScene Description: ${input.sceneDescription || ''}`
+      : `Scene Description: ${input.sceneDescription || ''}`;
 
     const finalPrompt = `${basePrompt}
 
@@ -90,16 +92,14 @@ ${input.camera && input.camera !== 'none' ? `Camera: ${input.camera}` : ''}
 ${input.filmType && input.filmType !== 'none' ? `Film Type: ${input.filmType}` : ''}
 `;
 
-    const model = input.referenceImage ? 'gemini-2.5-flash-image-preview' : 'gemini-2.5-flash';
+    const modelName = input.referenceImage ? 'gemini-2.5-flash-image-preview' : 'gemini-2.5-flash';
 
     const prompt = ai.definePrompt({
         name: 'generateScenePrompt',
         input: {schema: GenerateScenePromptInputSchema},
         output: {schema: GenerateScenePromptOutputSchema},
         prompt: finalPrompt,
-        config: {
-            model: `googleai/${model}`
-        }
+        model: `googleai/${modelName}`
     });
     
     const {output} = await prompt(input.referenceImage ? {
