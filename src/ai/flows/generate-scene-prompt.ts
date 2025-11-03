@@ -92,7 +92,7 @@ ${input.camera && input.camera !== 'none' ? `Camera: ${input.camera}` : ''}
 ${input.filmType && input.filmType !== 'none' ? `Film Type: ${input.filmType}` : ''}
 `;
 
-    const modelName = input.referenceImage ? 'gemini-2.5-flash-image-preview' : 'gemini-2.5-flash';
+    const modelName = 'gemini-2.5-flash';
 
     const prompt = ai.definePrompt({
         name: 'generateScenePrompt',
