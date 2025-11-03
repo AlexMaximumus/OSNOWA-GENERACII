@@ -17,6 +17,7 @@ import { studioPromptInstructions } from '@/lib/studio-prompt-instructions';
 
 const GenerateCharacterPromptInputSchema = z.object({
   description: z.string().describe('A general description of the character.'),
+  nationality: z.string().optional().describe('The selected nationality and gender of the character (e.g., "Young Japanese woman").'),
   artStyle: z
     .string()
     .optional()
@@ -56,9 +57,10 @@ const generateCharacterPromptFlow = ai.defineFlow(
   async (input) => {
     
     let basePrompt = `You are a prompt engineer specializing in creating detailed character design prompts.
+The character's identity MUST be based on the provided nationality: ${input.nationality || 'not specified'}.
 
 Analyze the following character description. Extract the character's name for the 'name' field and generate:
-1. An extremely detailed and unambiguous physical description of the character from head to toe for the 'appearanceDescription' field. This must be exhaustive, covering every aspect of their appearance including face shape, eye color, hair style and texture, skin details, body type, posture, and any unique features like scars or tattoos. All details must be explicitly stated so the description can be reused consistently.
+1. An extremely detailed and unambiguous physical description of the character from head to toe for the 'appearanceDescription' field. This must be exhaustive, covering every aspect of their appearance including face shape, eye color, hair style and texture, skin details, body type, posture, and any unique features like scars or tattoos. All details must be explicitly stated so the description can be reused consistently. The description MUST reflect the specified nationality.
 2. A detailed prompt for generating an image of this character for the 'prompt' field. This prompt must be at least 3000 characters long.
 
 CRITICAL RULE: The character's name MUST NOT be included in the generated image 'prompt' or the 'appearanceDescription'. The name is only for the UI. The prompt should only contain visual descriptions. If a name is not explicitly provided in the user's description, invent one for the 'name' output field, but do not use it anywhere else.
@@ -82,6 +84,7 @@ If the user has provided specific parameters (style, camera, etc.), use them. If
 
     const finalPrompt = `${basePrompt}
   
+Character Nationality/Gender: ${input.nationality}
 Character Description: ${input.description}
 ${input.artStyle && input.artStyle !== 'none' ? `Art Style: ${input.artStyle}` : ''}
 ${input.cameraAngle && input.cameraAngle !== 'none' ? `Camera Angle: ${input.cameraAngle}` : ''}

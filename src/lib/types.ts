@@ -9,6 +9,7 @@ export type CreationType = z.infer<typeof CreationTypeSchema>;
 // For form validation
 export const CharacterFormSchema = z.object({
   description: z.string().min(1, "Description is required."),
+  nationality: z.string().optional(),
   artStyle: z.string().optional().default(''),
   cameraAngle: z.string().optional().default(''),
   lightingStyle: z.string().optional().default(''),

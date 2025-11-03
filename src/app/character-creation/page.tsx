@@ -20,6 +20,7 @@ import { lightingStyles } from '@/lib/lighting-styles';
 import { cameras } from '@/lib/cameras';
 import { filmTypes } from '@/lib/film-types';
 import { useFavoriteSettings } from '@/hooks/use-favorite-settings';
+import { nationalities } from '@/lib/nationalities';
 
 type GeneratedData = {
   prompt: string;
@@ -45,6 +46,7 @@ export default function CharacterCreationPage() {
     resolver: zodResolver(CharacterFormSchema),
     defaultValues: {
       description: '',
+      nationality: 'Young Japanese woman',
       artStyle: favoriteSettings.artStyle,
       cameraAngle: favoriteSettings.cameraAngle,
       lightingStyle: favoriteSettings.lightingStyle,
@@ -60,6 +62,7 @@ export default function CharacterCreationPage() {
       form.reset({
         ...form.getValues(),
         ...favoriteSettings,
+        nationality: form.getValues().nationality || 'Young Japanese woman',
       });
     }
   }, [isClient, favoriteSettings, form]);
@@ -180,6 +183,29 @@ export default function CharacterCreationPage() {
                     </FormItem>
                   )}
                 />
+
+                <FormField
+                    control={form.control}
+                    name="nationality"
+                    render={({ field }) => (
+                        <FormItem>
+                        <FormLabel>Nationality & Gender</FormLabel>
+                        <Select onValueChange={field.onChange} value={field.value}>
+                            <FormControl>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Select a nationality" />
+                            </SelectTrigger>
+                            </FormControl>
+                            <SelectContent>
+                            {nationalities.map((nat) => (
+                                <SelectItem key={nat} value={nat}>{nat}</SelectItem>
+                            ))}
+                            </SelectContent>
+                        </Select>
+                        <FormMessage />
+                        </FormItem>
+                    )}
+                    />
 
                 <FormField
                   control={form.control}

@@ -32,7 +32,7 @@ function CharacterCard({ character, onDelete }: { character: Character; onDelete
           <div className="space-y-1 pr-4">
             <CardTitle className="font-headline">{character.name}</CardTitle>
             <CardDescription className="line-clamp-2">
-              {character.description}
+              {character.nationality}
             </CardDescription>
           </div>
         </div>
@@ -79,6 +79,8 @@ function CharacterCard({ character, onDelete }: { character: Character; onDelete
                 <div className="text-muted-foreground">{character.creationType}</div>
                 <div className="font-medium">Prompt Type:</div>
                 <div className="text-muted-foreground">{character.promptType}</div>
+                <div className="font-medium">Nationality:</div>
+                <div className="text-muted-foreground">{character.nationality || 'N/A'}</div>
                 <div className="font-medium">Art Style:</div>
                 <div className="text-muted-foreground">{character.artStyle || 'N/A'}</div>
                 <div className="font-medium">Camera Angle:</div>
