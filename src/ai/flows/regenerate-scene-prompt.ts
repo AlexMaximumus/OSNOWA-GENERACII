@@ -94,7 +94,7 @@ ${input.camera && input.camera !== 'none' ? `New Camera: ${input.camera}` : ''}
 ${input.filmType && input.filmType !== 'none' ? `New Film Type: ${input.filmType}` : ''}
 `;
 
-    const model = input.referenceImage ? 'googleai/gemini-2.5-flash-image-preview' : 'googleai/gemini-2.5-flash';
+    const model = input.referenceImage ? 'gemini-2.5-flash-image-preview' : 'gemini-2.5-flash';
 
     const prompt = ai.definePrompt({
         name: 'regenerateScenePrompt',
@@ -102,7 +102,7 @@ ${input.filmType && input.filmType !== 'none' ? `New Film Type: ${input.filmType
         output: {schema: RegenerateScenePromptOutputSchema},
         prompt: finalPrompt,
         config: {
-            model: model
+            model: `googleai/${model}`
         }
     });
     
