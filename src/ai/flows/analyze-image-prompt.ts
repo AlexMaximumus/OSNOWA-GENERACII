@@ -11,7 +11,6 @@
 
 import {ai} from '@/ai/genkit';
 import {z} from 'genkit';
-import {generateContent} from 'genkit';
 
 const AnalyzeImagePromptInputSchema = z.object({
   referenceImage: z
@@ -56,7 +55,7 @@ Focus on the following aspects:
 
 Generate a single, cohesive text block for the 'imageDescription' field that can be used as a base for a new prompt.`;
 
-    const {output} = await generateContent({
+    const {output} = await ai.generate({
       model: 'googleai/gemini-2.5-flash',
       output: {schema: AnalyzeImagePromptOutputSchema},
       prompt: [
@@ -65,6 +64,6 @@ Generate a single, cohesive text block for the 'imageDescription' field that can
       ],
     });
 
-    return output;
+    return output!;
   }
 );
