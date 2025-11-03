@@ -94,17 +94,26 @@ ${input.camera && input.camera !== 'none' ? `New Camera: ${input.camera}` : ''}
 ${input.filmType && input.filmType !== 'none' ? `New Film Type: ${input.filmType}` : ''}
 `;
 
+    const model = input.referenceImage ? 'googleai/gemini-2.5-flash-image-preview' : 'googleai/gemini-2.5-flash';
+
     const prompt = ai.definePrompt({
         name: 'regenerateScenePrompt',
         input: {schema: RegenerateScenePromptInputSchema},
         output: {schema: RegenerateScenePromptOutputSchema},
         prompt: finalPrompt,
-        custom: {
-            use: input.referenceImage ? 'gemini-2.5-flash-image-preview' : 'gemini-2.5-flash'
+        config: {
+            model: model
         }
     });
     
-    const {output} = await prompt(input);
+    const {output} = await prompt(input.referenceImage ? {
+        ...input,
+        prompt: [
+            { media: { url: input.referenceImage } },
+            { text: finalPrompt }
+        ]
+    } as any : input);
+
     return output!;
   }
 );

@@ -4,17 +4,7 @@
  * @fileOverview Generates an optimized prompt for scene generation based on user inputs.
  *
  * - generateScenePrompt - A function that generates the scene prompt.
- * - GenerateScenePromptInput - The input type for the generateScenePrompt function A soft film photo taken on a {camera} with a {filmType} lens, 
-shot from a {cameraAngle}, 
-the scene shows [main character: young woman / man / couple / group of people], 
-they are [action: provide an exhaustive description of what they are doing, their posture, where they are looking, the precise position of their hands, the state of their hair, and how their clothes hang or move], 
-location is [specific place: describe the location in extreme detail, such as a quiet backstreet / riverside / park bench / seaside walk], 
-lighting is {lightingStyle}, 
-the background includes [environment details: meticulously describe every visible element like buildings, signs, wires, bicycles, windows, plants, paths, water, and shadows, adding nuance and texture to each], 
-colors are [be very specific about the color palette, such as cool tones with slightly faded, natural film grain, no digital sharpness, and a soft pastel mood, describing how colors interact], 
-the atmosphere feels [sensations: elaborate on the sensory experience, including light wind, specific street sounds, smells of food or nature, distant conversations, and the feeling of the air], 
-extra details: [micro-details: focus on the smallest details like the folds and texture of clothing, the subtle movement of a single strand of hair, the specific shape of a branch's shadow, complex reflections on wet asphalt, the weave of the fabric, and the specific wear-and-tear on sneakers], 
-overall: [description of feeling — create a comprehensive summary of the feeling, such as spontaneous, imperfect, deeply calm, authentic, embodying the wabi-sabi aesthetic, and a natural, immersive film mood].
+ * - GenerateScenePromptInput - The input type for the generateScenePrompt function
  * - GenerateScenePromptOutput - The return type for the generateScenePrompt function.
  */
 
@@ -100,17 +90,26 @@ ${input.camera && input.camera !== 'none' ? `Camera: ${input.camera}` : ''}
 ${input.filmType && input.filmType !== 'none' ? `Film Type: ${input.filmType}` : ''}
 `;
 
+    const model = input.referenceImage ? 'googleai/gemini-2.5-flash-image-preview' : 'googleai/gemini-2.5-flash';
+
     const prompt = ai.definePrompt({
         name: 'generateScenePrompt',
         input: {schema: GenerateScenePromptInputSchema},
         output: {schema: GenerateScenePromptOutputSchema},
         prompt: finalPrompt,
-        custom: {
-            use: input.referenceImage ? 'gemini-2.5-flash-image-preview' : 'gemini-2.5-flash'
+        config: {
+            model: model
         }
     });
     
-    const {output} = await prompt(input);
+    const {output} = await prompt(input.referenceImage ? {
+        ...input,
+        prompt: [
+            { media: { url: input.referenceImage } },
+            { text: finalPrompt }
+        ]
+    } as any : input);
+
     return output!;
   }
 );
