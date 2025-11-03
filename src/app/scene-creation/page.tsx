@@ -1,10 +1,10 @@
 
 'use client';
 
-import { useState, useEffect, Suspense } from 'react';
+import { useState, useEffect, Suspense, useCallback } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Copy, Loader2, Save, Wand, Users, RotateCw, Shirt, Library, Star, Trash2 } from 'lucide-react';
+import { Copy, Loader2, Save, Wand, Users, RotateCw, Shirt, Library, Star, Trash2, ImagePlus, XCircle } from 'lucide-react';
 import { generateScenePrompt } from '@/ai/flows/generate-scene-prompt';
 import { regenerateScenePrompt } from '@/ai/flows/regenerate-scene-prompt';
 import { Button } from '@/components/ui/button';
@@ -24,6 +24,7 @@ import { filmTypes } from '@/lib/film-types';
 import { useSearchParams } from 'next/navigation';
 import { useFavoriteSettings } from '@/hooks/use-favorite-settings';
 import { useCompletionVFX } from '@/hooks/use-completion-vfx';
+import Image from 'next/image';
 
 function SceneCreationForm() {
   const searchParams = useSearchParams();
@@ -32,6 +33,8 @@ function SceneCreationForm() {
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [lastGeneratedData, setLastGeneratedData] = useState<SceneFormData | null>(null);
   const [editingScene, setEditingScene] = useState<Scene | null>(null);
+  const [referenceImage, setReferenceImage] = useState<string | null>(null);
+
 
   const { toast } = useToast();
   const [scenes, setScenes] = useLocalStorage<Scene[]>('scenes', []);
@@ -56,6 +59,36 @@ function SceneCreationForm() {
       promptType: 'artistic',
     },
   });
+
+  const handlePaste = useCallback((event: ClipboardEvent) => {
+    const items = event.clipboardData?.items;
+    if (!items) return;
+    for (let i = 0; i < items.length; i++) {
+      if (items[i].type.indexOf('image') !== -1) {
+        const blob = items[i].getAsFile();
+        if (blob) {
+          const reader = new FileReader();
+          reader.onload = (e) => {
+            const dataUrl = e.target?.result as string;
+            setReferenceImage(dataUrl);
+            toast({
+              title: 'Image Pasted',
+              description: 'Reference image has been added to your scene.',
+            });
+          };
+          reader.readAsDataURL(blob);
+          event.preventDefault();
+        }
+      }
+    }
+  }, [toast]);
+
+  useEffect(() => {
+    window.addEventListener('paste', handlePaste);
+    return () => {
+      window.removeEventListener('paste', handlePaste);
+    };
+  }, [handlePaste]);
   
   const availableOutfits = outfits;
 
@@ -105,7 +138,7 @@ function SceneCreationForm() {
     
     const outfit = outfits.find(o => o.id === data.outfitId);
 
-    let characterVisuals = character.appearanceDescription;
+    let characterVisuals = `${character.appearanceDescription}\n${character.prompt}`;
     
     if (outfit) {
         characterVisuals += `\n\nOutfit: ${outfit.prompt}`;
@@ -145,6 +178,7 @@ function SceneCreationForm() {
           ...data,
           sceneDescription: sceneInfo,
           characterInfo,
+          referenceImage: referenceImage || undefined,
       };
 
       if (isRegen) {
@@ -240,6 +274,7 @@ function SceneCreationForm() {
       setEditingScene(null);
       setGeneratedPrompt(null);
       setLastGeneratedData(null);
+      setReferenceImage(null);
       return;
     }
     const sceneToLoad = scenes.find(s => s.id === sceneId);
@@ -265,13 +300,13 @@ function SceneCreationForm() {
           }}
         />
       )}
-      <div className="container mx-auto p-4 md:p-8">
+       <div className="container mx-auto p-4 md:p-8">
         <h1 className="text-3xl font-headline font-bold mb-6">{editingScene ? 'Edit Scene' : 'Create New Scene'}</h1>
         <div className="grid md:grid-cols-2 gap-8 items-start">
           <Card>
             <CardHeader>
               <CardTitle>Scene Details</CardTitle>
-              <CardDescription>Describe your scene and select generation parameters.</CardDescription>
+              <CardDescription>Describe your scene, paste a reference image (Ctrl+V), and select parameters.</CardDescription>
             </CardHeader>
             <CardContent>
               <Form {...form}>
@@ -293,6 +328,32 @@ function SceneCreationForm() {
                       </SelectContent>
                     </Select>
                   </FormItem>
+
+                   {referenceImage ? (
+                    <FormItem>
+                      <FormLabel>Reference Image</FormLabel>
+                      <div className="relative w-full aspect-video rounded-md border overflow-hidden">
+                        <Image src={referenceImage} alt="Reference" layout="fill" objectFit="contain" />
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="absolute top-2 right-2 bg-background/50 hover:bg-background/80 rounded-full h-8 w-8"
+                          onClick={() => setReferenceImage(null)}
+                        >
+                          <XCircle className="h-5 w-5 text-destructive" />
+                          <span className="sr-only">Remove reference image</span>
+                        </Button>
+                      </div>
+                    </FormItem>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-6 border-2 border-dashed rounded-md text-center">
+                      <ImagePlus className="h-10 w-10 text-muted-foreground" />
+                      <p className="mt-2 text-sm text-muted-foreground">
+                        Paste an image from your clipboard (Ctrl+V) to use as a reference.
+                      </p>
+                    </div>
+                  )}
 
                   <FormField
                     control={form.control}
@@ -650,5 +711,3 @@ export default function SceneCreationPage() {
         </Suspense>
     )
 }
-
-    

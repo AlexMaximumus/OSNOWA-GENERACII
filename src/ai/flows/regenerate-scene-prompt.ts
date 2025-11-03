@@ -19,6 +19,7 @@ const RegenerateScenePromptInputSchema = z.object({
     .string()
     .describe('The original detailed description of the scene.'),
   characterInfo: z.string().optional().describe("A string containing the full appearance description and prompt for a character to be included in the scene."),
+  referenceImage: z.string().optional().describe("A data URI of a reference image. Analyze this image and use it as the primary visual guide for the scene's composition, style, and mood, but replace elements as described in the text prompt."),
   artStyle: z
     .string()
     .optional()
@@ -56,6 +57,8 @@ const regenerateScenePromptFlow = ai.defineFlow(
   },
   async (input) => {
     let basePrompt = `You are an expert prompt engineer. Your task is to REGENERATE a detailed prompt for an image generation model based on an original scene description and a NEW set of parameters. The final prompt must be at least 3000 characters long.
+
+If a reference image ('referenceImage') is provided, you MUST use it as the primary source for the scene's composition, colors, and overall aesthetic. However, you must replace the characters, location, and specific mood elements with the new details provided in the text inputs ('characterInfo', 'sceneDescription', etc.). Your task is to intelligently merge the visual style of the reference image with the new subject matter from the text.
 
 You must use the original scene description as the core creative brief, but apply the NEWLY provided parameters (art style, camera, etc.) to it.
 
@@ -96,6 +99,9 @@ ${input.filmType && input.filmType !== 'none' ? `New Film Type: ${input.filmType
         input: {schema: RegenerateScenePromptInputSchema},
         output: {schema: RegenerateScenePromptOutputSchema},
         prompt: finalPrompt,
+        custom: {
+            use: input.referenceImage ? 'gemini-2.5-flash-image-preview' : 'gemini-2.5-flash'
+        }
     });
     
     const {output} = await prompt(input);

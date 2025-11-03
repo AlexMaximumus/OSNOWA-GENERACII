@@ -29,6 +29,7 @@ const GenerateScenePromptInputSchema = z.object({
     .string()
     .describe('Detailed description of the scene including environment, time of day, and mood.'),
   characterInfo: z.string().optional().describe("A string containing the full, consistent, and detailed visual appearance description and prompt for a character. This MUST NOT contain a name."),
+  referenceImage: z.string().optional().describe("A data URI of a reference image. Analyze this image and use it as the primary visual guide for the scene's composition, style, and mood, but replace elements as described in the text prompt."),
   artStyle: z
     .string()
     .optional()
@@ -66,6 +67,8 @@ const generateScenePromptFlow = ai.defineFlow(
     
     let basePrompt = `You are an expert prompt engineer specializing in creating detailed and optimized prompts for generating scene images based on user inputs. The final prompt must be at least 3000 characters long.
 
+If a reference image ('referenceImage') is provided, you MUST use it as the primary source for the scene's composition, colors, and overall aesthetic. However, you must replace the characters, location, and specific mood elements with the new details provided in the text inputs ('characterInfo', 'sceneDescription', etc.). Your task is to intelligently merge the visual style of the reference image with the new subject matter from the text.
+
 If a character description ('characterInfo') is provided, you MUST seamlessly integrate it into the main scene description. This 'characterInfo' contains a pre-made, detailed visual description and should be used as-is to ensure consistency. The character should be the central focus of the scene. Do NOT use a character name, only the visual description provided.
 
 If the description includes a base location prompt and additional details, you must synthesize them. Use the base location prompt as the foundation and expertly weave the additional scene details into it to create a single, cohesive, and extremely detailed final prompt.
@@ -102,6 +105,9 @@ ${input.filmType && input.filmType !== 'none' ? `Film Type: ${input.filmType}` :
         input: {schema: GenerateScenePromptInputSchema},
         output: {schema: GenerateScenePromptOutputSchema},
         prompt: finalPrompt,
+        custom: {
+            use: input.referenceImage ? 'gemini-2.5-flash-image-preview' : 'gemini-2.5-flash'
+        }
     });
     
     const {output} = await prompt(input);
