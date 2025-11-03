@@ -19,9 +19,9 @@ const GenerateScenePromptInputSchema = z.object({
   sceneDescription: z
     .string()
     .optional()
-    .describe('Detailed description of the scene including environment, time of day, and mood.'),
+    .describe('Detailed description of the scene including environment, time of day, and mood. This may contain a pre-analyzed description from a reference image.'),
   characterInfo: z.string().optional().describe("A string containing the full, consistent, and detailed visual appearance description and prompt for a character. This MUST NOT contain a name."),
-  referenceImage: z.string().optional().describe("A data URI of a reference image. Analyze this image and use it as the primary visual guide for the scene's composition, style, and mood, but replace elements as described in the text prompt."),
+  referenceImage: z.string().optional().describe("This is for context but the main prompt logic should rely on sceneDescription which might be derived from this image."),
   artStyle: z
     .string()
     .optional()
@@ -59,7 +59,9 @@ const generateScenePromptFlow = ai.defineFlow(
     
     let basePrompt = `You are an expert prompt engineer specializing in creating detailed and optimized prompts for generating scene images based on user inputs. The final prompt must be at least 3000 characters long.
 
-CRITICAL RULE FOR REFERENCE IMAGE: If a reference image ('referenceImage') is provided, you MUST treat it as a blueprint. Your task is to EXACTLY replicate the composition, camera angle, character pose, and overall structure of the reference image. However, you must intelligently REPLACE the subject (character), location, and atmosphere with the NEW details provided in the text inputs ('characterInfo', 'sceneDescription', etc.). Your final prompt should describe a scene that has the same visual structure as the reference image but with the content specified in the text.
+The user has provided a scene description. This description might be derived from a reference image they provided, capturing its composition, pose, and mood. Your task is to enhance this description and synthesize it with any other details provided.
+
+CRITICAL RULE: If the scene description contains details about composition, pose, and camera angles (likely from an analyzed image), you MUST treat those as the structural blueprint for the final prompt. Your job is to flesh out this blueprint, integrating the specified character, location, and stylistic choices into a cohesive whole.
 
 If a character description ('characterInfo') is provided, you MUST seamlessly integrate it into the main scene description. This 'characterInfo' contains a pre-made, detailed visual description and should be used as-is to ensure consistency. The character should be the central focus of the scene. Do NOT use a character name, only the visual description provided.
 
@@ -92,23 +94,14 @@ ${input.camera && input.camera !== 'none' ? `Camera: ${input.camera}` : ''}
 ${input.filmType && input.filmType !== 'none' ? `Film Type: ${input.filmType}` : ''}
 `;
 
-    const modelName = 'gemini-2.5-flash';
-
     const prompt = ai.definePrompt({
         name: 'generateScenePrompt',
         input: {schema: GenerateScenePromptInputSchema},
         output: {schema: GenerateScenePromptOutputSchema},
         prompt: finalPrompt,
-        model: `googleai/${modelName}`
     });
     
-    const {output} = await prompt(input.referenceImage ? {
-        ...input,
-        prompt: [
-            { media: { url: input.referenceImage } },
-            { text: finalPrompt }
-        ]
-    } as any : input);
+    const {output} = await prompt(input);
 
     return output!;
   }

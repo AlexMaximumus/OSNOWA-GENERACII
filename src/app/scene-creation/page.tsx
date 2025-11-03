@@ -7,6 +7,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { Copy, Loader2, Save, Wand, Users, RotateCw, Shirt, Library, Star, Trash2, ImagePlus, XCircle } from 'lucide-react';
 import { generateScenePrompt } from '@/ai/flows/generate-scene-prompt';
 import { regenerateScenePrompt } from '@/ai/flows/regenerate-scene-prompt';
+import { analyzeImagePrompt } from '@/ai/flows/analyze-image-prompt';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -30,6 +31,7 @@ function SceneCreationForm() {
   const searchParams = useSearchParams();
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isRegenerating, setIsRegenerating] = useState(false);
   const [lastGeneratedData, setLastGeneratedData] = useState<SceneFormData | null>(null);
   const [editingScene, setEditingScene] = useState<Scene | null>(null);
@@ -60,6 +62,30 @@ function SceneCreationForm() {
     },
   });
 
+  const handleImageAnalysis = useCallback(async (image: string) => {
+    setIsAnalyzing(true);
+    try {
+      const result = await analyzeImagePrompt({ referenceImage: image });
+      if (result.imageDescription) {
+        const currentDescription = form.getValues('sceneDescription');
+        form.setValue('sceneDescription', (currentDescription ? currentDescription + '\n\n' : '') + result.imageDescription);
+        toast({
+          title: 'Image Analyzed',
+          description: 'A description has been generated from your image.',
+        });
+      }
+    } catch (error) {
+      console.error('Error analyzing image:', error);
+      toast({
+        variant: 'destructive',
+        title: 'Analysis Failed',
+        description: 'Could not analyze the reference image.',
+      });
+    } finally {
+      setIsAnalyzing(false);
+    }
+  }, [form, toast]);
+
   const handlePaste = useCallback((event: ClipboardEvent) => {
     const items = event.clipboardData?.items;
     if (!items) return;
@@ -73,15 +99,16 @@ function SceneCreationForm() {
             setReferenceImage(dataUrl);
             toast({
               title: 'Image Pasted',
-              description: 'Reference image has been added to your scene.',
+              description: 'Analyzing image to generate description...',
             });
+            handleImageAnalysis(dataUrl);
           };
           reader.readAsDataURL(blob);
           event.preventDefault();
         }
       }
     }
-  }, [toast]);
+  }, [toast, handleImageAnalysis]);
 
   useEffect(() => {
     window.addEventListener('paste', handlePaste);
@@ -147,12 +174,12 @@ function SceneCreationForm() {
     return characterVisuals;
   };
 
-  const getLocationInfo = (data: SceneFormData): string => {
+  const getLocationInfo = (data: SceneFormData): string | undefined => {
     let description = data.sceneDescription;
     if (data.locationId && data.locationId !== 'none') {
         const location = locations.find(l => l.id === data.locationId);
         if (location) {
-            description = `Base Location Prompt: ${location.prompt}\n\nAdditional Scene Details: ${data.sceneDescription}`;
+            description = `Base Location Prompt: ${location.prompt}\n\nAdditional Scene Details: ${data.sceneDescription || ''}`;
         }
     }
     return description;
@@ -323,7 +350,7 @@ function SceneCreationForm() {
                       <SelectContent>
                         <SelectItem value="none">Create a new scene</SelectItem>
                         {scenes.map((scene) => (
-                          <SelectItem key={scene.id} value={scene.id}>{scene.artStyle}: {scene.sceneDescription.substring(0, 50)}...</SelectItem>
+                          <SelectItem key={scene.id} value={scene.id}>{scene.artStyle}: {scene.sceneDescription?.substring(0, 50)}...</SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -634,7 +661,7 @@ function SceneCreationForm() {
                   </div>
 
 
-                  <Button type="submit" disabled={isLoading} className="w-full">
+                  <Button type="submit" disabled={isLoading || isAnalyzing} className="w-full">
                     {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <Wand className="mr-2 h-4 w-4" />}
                     {editingScene ? 'Update Prompt' : 'Generate Prompt'}
                   </Button>
@@ -644,7 +671,7 @@ function SceneCreationForm() {
                       type="button" 
                       variant="secondary"
                       onClick={form.handleSubmit((data) => handleGeneration(data, true))} 
-                      disabled={isRegenerating || isLoading} 
+                      disabled={isRegenerating || isLoading || isAnalyzing} 
                       className="w-full"
                     >
                       {isRegenerating ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : <RotateCw className="mr-2 h-4 w-4" />}
@@ -670,9 +697,10 @@ function SceneCreationForm() {
               )}
             </CardHeader>
             <CardContent className="min-h-[300px]">
-              {isLoading || isRegenerating ? (
+              {isLoading || isRegenerating || isAnalyzing ? (
                 <div className="flex items-center justify-center h-full">
                   <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                   {isAnalyzing && <p className="ml-2">Analyzing image...</p>}
                 </div>
               ) : generatedPrompt ? (
                 <Textarea readOnly value={generatedPrompt} className="h-full min-h-[400px] text-base" />
