@@ -67,7 +67,7 @@ const generateScenePromptFlow = ai.defineFlow(
     
     let basePrompt = `You are an expert prompt engineer specializing in creating detailed and optimized prompts for generating scene images based on user inputs. The final prompt must be at least 3000 characters long.
 
-If a reference image ('referenceImage') is provided, you MUST use it as the primary source for the scene's composition, colors, and overall aesthetic. However, you must replace the characters, location, and specific mood elements with the new details provided in the text inputs ('characterInfo', 'sceneDescription', etc.). Your task is to intelligently merge the visual style of the reference image with the new subject matter from the text.
+CRITICAL RULE FOR REFERENCE IMAGE: If a reference image ('referenceImage') is provided, you MUST treat it as a blueprint. Your task is to EXACTLY replicate the composition, camera angle, character pose, and overall structure of the reference image. However, you must intelligently REPLACE the subject (character), location, and atmosphere with the NEW details provided in the text inputs ('characterInfo', 'sceneDescription', etc.). Your final prompt should describe a scene that has the same visual structure as the reference image but with the content specified in the text.
 
 If a character description ('characterInfo') is provided, you MUST seamlessly integrate it into the main scene description. This 'characterInfo' contains a pre-made, detailed visual description and should be used as-is to ensure consistency. The character should be the central focus of the scene. Do NOT use a character name, only the visual description provided.
 

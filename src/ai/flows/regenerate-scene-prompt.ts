@@ -58,7 +58,7 @@ const regenerateScenePromptFlow = ai.defineFlow(
   async (input) => {
     let basePrompt = `You are an expert prompt engineer. Your task is to REGENERATE a detailed prompt for an image generation model based on an original scene description and a NEW set of parameters. The final prompt must be at least 3000 characters long.
 
-If a reference image ('referenceImage') is provided, you MUST use it as the primary source for the scene's composition, colors, and overall aesthetic. However, you must replace the characters, location, and specific mood elements with the new details provided in the text inputs ('characterInfo', 'sceneDescription', etc.). Your task is to intelligently merge the visual style of the reference image with the new subject matter from the text.
+CRITICAL RULE FOR REFERENCE IMAGE: If a reference image ('referenceImage') is provided, you MUST treat it as a blueprint. Your task is to EXACTLY replicate the composition, camera angle, character pose, and overall structure of the reference image. However, you must intelligently REPLACE the subject (character), location, and atmosphere with the NEW details provided in the text inputs ('characterInfo', 'sceneDescription', etc.). Your final prompt should describe a scene that has the same visual structure as the reference image but with the content specified in the text.
 
 You must use the original scene description as the core creative brief, but apply the NEWLY provided parameters (art style, camera, etc.) to it.
 
